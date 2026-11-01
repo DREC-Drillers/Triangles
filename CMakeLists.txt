@@ -10,7 +10,7 @@ option(TRIANGLES_BUILD_APP "Build the triangle input parser" OFF)
 include(CTest)
 
 function(triangles_configure_target target)
-    target_compile_features(${target} PRIVATE cxx_std_17)
+    target_compile_features(${target} PRIVATE cxx_std_20)
     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
     if(MSVC)
         target_compile_options(${target} PRIVATE /W4 /permissive- /utf-8)
@@ -62,6 +62,26 @@ if(TRIANGLES_BUILD_APP)
 endif()
 
 option(TRIANGLES_BUILD_OPENGL_DEMO "Build the OpenGL example" OFF)
+
+option(TRIANGLES_BUILD_VISUALIZER "Build the visualizer window and backend factory" OFF)
+
+if(TRIANGLES_BUILD_VISUALIZER)
+    find_package(glfw3 CONFIG REQUIRED)
+    add_library(triangles_visualizer
+        visualizer/backendFactory.cpp
+        visualizer/glfwWindow.cpp)
+    target_include_directories(triangles_visualizer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(triangles_visualizer PRIVATE glfw)
+    target_compile_features(triangles_visualizer PUBLIC cxx_std_20)
+    triangles_configure_target(triangles_visualizer)
+    set_property(TARGET triangles_visualizer PROPERTY CXX_SCAN_FOR_MODULES OFF)
+
+    find_package(Threads REQUIRED)
+    add_executable(renderTest renderTest.cpp)
+    target_link_libraries(renderTest PRIVATE triangles_visualizer Threads::Threads)
+    triangles_configure_target(renderTest)
+    set_property(TARGET renderTest PROPERTY CXX_SCAN_FOR_MODULES OFF)
+endif()
 
 if(TRIANGLES_BUILD_OPENGL_DEMO)
     enable_language(C)
