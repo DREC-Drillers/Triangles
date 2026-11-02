@@ -125,7 +125,9 @@ if(BUILD_TESTING)
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/polygonProcessor")
     target_link_libraries(parser_tests PRIVATE
-        GeneralFunctions::lexer GeneralFunctions::files GTest::gtest_main)
+        GeneralFunctions::lexer GeneralFunctions::files
+        GeneralFunctions::geometry GTest::gtest_main)
+    set_property(TARGET parser_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     target_compile_definitions(parser_tests PRIVATE
         TRIANGLES_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     triangles_configure_target(parser_tests)
