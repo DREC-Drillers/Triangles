@@ -1,3 +1,4 @@
+#include <GLFW/glfw3.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -11,8 +12,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-
-#include <GLFW/glfw3.h>
 
 #include "visualizer/backendFactory.hpp"
 #include "visualizer/cameraController/orbitCameraController.hpp"
@@ -31,9 +30,8 @@ struct TriangleSettings {
 };
 
 triangles::visualizer::Quaternion triangleRotation(float rotationDegrees,
-                                                  float tiltDegrees) {
-    const float halfRotation =
-        rotationDegrees * std::numbers::pi_v<float> / 360.0f;
+                                                   float tiltDegrees) {
+    const float halfRotation = rotationDegrees * std::numbers::pi_v<float> / 360.0f;
     const float halfTilt = tiltDegrees * std::numbers::pi_v<float> / 360.0f;
 
     const float sinRotation = std::sin(halfRotation);
@@ -48,8 +46,8 @@ triangles::visualizer::Quaternion triangleRotation(float rotationDegrees,
             cosTilt * cosRotation};
 }
 
-std::array<triangles::visualizer::LightId, 3> configureLighting(
-    triangles::visualizer::Lighting& lighting) {
+std::array<triangles::visualizer::LightId, 3>
+configureLighting(triangles::visualizer::Lighting& lighting) {
     using namespace triangles::visualizer;
 
     lighting.clear();
@@ -100,11 +98,11 @@ public:
 
         bool changed = false;
 
-        for (std::size_t i = 0; i < keys_.size(); ++i) {
-            const bool down = glfwGetKey(window_, keys_[i]) == GLFW_PRESS;
+        for (std::size_t i = 0; i < KEYS.size(); ++i) {
+            const bool down = glfwGetKey(window_, KEYS[i]) == GLFW_PRESS;
 
             if (down && !previousKeys_[i]) {
-                handleKey(keys_[i]);
+                handleKey(KEYS[i]);
                 changed = true;
             }
 
@@ -139,20 +137,20 @@ private:
         for (const auto& [id, color] : originalColors_) {
             auto& material = scene_.object(id).material;
             material.lit = lit_;
-            material.color = gray_ ? std::array<float, 4>{0.8f, 0.8f, 0.8f, 1.0f}
-                                   : color;
+            material.color =
+                gray_ ? std::array<float, 4>{0.8f, 0.8f, 0.8f, 1.0f} : color;
         }
     }
 
     void showState() const {
         const auto state = [](bool enabled) { return enabled ? "ON" : "OFF"; };
-        constexpr std::array labels{"1 Ambient: ", "2 Warm: ", "3 Cool: "};
+        constexpr std::array LABELS{"1 Ambient: ", "2 Warm: ", "3 Cool: "};
 
         std::string title = "Lighting demo";
 
         for (std::size_t i = 0; i < lights_.size(); ++i) {
             title += " | ";
-            title += labels[i];
+            title += LABELS[i];
             title += state(scene_.lighting.light(lights_[i]).enabled);
         }
 
@@ -170,18 +168,22 @@ private:
     std::vector<std::pair<triangles::visualizer::ObjectId, std::array<float, 4>>>
         originalColors_;
 
-    static constexpr std::array keys_{
-        GLFW_KEY_1, GLFW_KEY_2, GLFW_KEY_3, GLFW_KEY_0,
-        GLFW_KEY_4, GLFW_KEY_L, GLFW_KEY_C, GLFW_KEY_ESCAPE};
+    static constexpr std::array KEYS{GLFW_KEY_1,
+                                     GLFW_KEY_2,
+                                     GLFW_KEY_3,
+                                     GLFW_KEY_0,
+                                     GLFW_KEY_4,
+                                     GLFW_KEY_L,
+                                     GLFW_KEY_C,
+                                     GLFW_KEY_ESCAPE};
 
-    std::array<bool, keys_.size()> previousKeys_{};
+    std::array<bool, KEYS.size()> previousKeys_{};
     bool lit_ = true;
     bool gray_ = true;
 };
 
 void runDemo(triangles::visualizer::Viewer& viewer,
-             triangles::visualizer::Window& window,
-             LightingDemoControls& controls) {
+             triangles::visualizer::Window& window, LightingDemoControls& controls) {
     auto previousTime = std::chrono::steady_clock::now();
 
     while (!window.shouldClose()) {
@@ -224,24 +226,47 @@ int main() {
                          {{0.0f, 0.7f, 0.0f}, {0.0f, 0.0f, 1.0f}}}};
 
         const std::array<TriangleSettings, 10> triangles{
-            {{{-3.6f, 1.3f, -0.8f}, -25.0f, -55.0f, 0.90f, {0.95f, 0.35f, 0.20f, 1.0f}},
-             {{-1.8f, 1.1f, 0.3f}, 15.0f, -25.0f, 0.75f, {0.95f, 0.65f, 0.15f, 1.0f}},
+            {{{-3.6f, 1.3f, -0.8f},
+              -25.0f,
+              -55.0f,
+              0.90f,
+              {0.95f, 0.35f, 0.20f, 1.0f}},
+             {{-1.8f, 1.1f, 0.3f},
+              15.0f,
+              -25.0f,
+              0.75f,
+              {0.95f, 0.65f, 0.15f, 1.0f}},
              {{0.0f, 1.5f, -0.4f}, 45.0f, 0.0f, 1.00f, {0.65f, 0.85f, 0.20f, 1.0f}},
              {{1.8f, 1.2f, 0.7f}, -10.0f, 25.0f, 0.85f, {0.20f, 0.80f, 0.45f, 1.0f}},
              {{3.6f, 1.4f, -0.2f}, 80.0f, 55.0f, 0.95f, {0.15f, 0.75f, 0.80f, 1.0f}},
-             {{-3.5f, -1.3f, 0.4f}, 150.0f, 55.0f, 0.80f, {0.25f, 0.55f, 0.95f, 1.0f}},
-             {{-1.7f, -1.1f, -1.0f}, -45.0f, 25.0f, 1.10f, {0.45f, 0.35f, 0.95f, 1.0f}},
+             {{-3.5f, -1.3f, 0.4f},
+              150.0f,
+              55.0f,
+              0.80f,
+              {0.25f, 0.55f, 0.95f, 1.0f}},
+             {{-1.7f, -1.1f, -1.0f},
+              -45.0f,
+              25.0f,
+              1.10f,
+              {0.45f, 0.35f, 0.95f, 1.0f}},
              {{0.2f, -1.5f, 0.6f}, 30.0f, 0.0f, 0.75f, {0.75f, 0.30f, 0.90f, 1.0f}},
-             {{1.9f, -1.2f, -0.5f}, 110.0f, -25.0f, 1.00f, {0.95f, 0.35f, 0.65f, 1.0f}},
-             {{3.6f, -1.4f, 0.1f}, -70.0f, -55.0f, 0.85f, {0.85f, 0.85f, 0.90f, 1.0f}}}};
+             {{1.9f, -1.2f, -0.5f},
+              110.0f,
+              -25.0f,
+              1.00f,
+              {0.95f, 0.35f, 0.65f, 1.0f}},
+             {{3.6f, -1.4f, 0.1f},
+              -70.0f,
+              -55.0f,
+              0.85f,
+              {0.85f, 0.85f, 0.90f, 1.0f}}}};
 
         for (const auto& triangleSettings : triangles) {
             SceneObject triangle;
             triangle.geometry = geometry;
             triangle.transform.position = triangleSettings.position;
-            triangle.transform.rotation =
-                triangleRotation(triangleSettings.rotationDegrees,
-                                 triangleSettings.tiltDegrees);
+            triangle.transform.rotation = triangleRotation(
+                triangleSettings.rotationDegrees, triangleSettings.tiltDegrees);
             triangle.transform.scale = {triangleSettings.scale,
                                         triangleSettings.scale,
                                         triangleSettings.scale};

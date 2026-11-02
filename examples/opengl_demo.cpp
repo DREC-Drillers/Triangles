@@ -1,18 +1,16 @@
-#include <iostream>
-#include <algorithm>
-
-#include <glad/gl.h>
 #include <GLFW/glfw3.h>
-
+#include <algorithm>
+#include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 const float vertices[] = {
     // Положение         Цвет RGB          Нормаль
-    -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 1.0f,
-     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+    0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 };
 
 const char* vertexShaderSource = R"(
@@ -92,8 +90,7 @@ GLuint compileShader(GLenum type, const char* source) {
 
 int main() {
     glfwSetErrorCallback([](int code, const char* description) {
-        std::cerr << "GLFW error " << code << ": "
-              << description << '\n';
+        std::cerr << "GLFW error " << code << ": " << description << '\n';
     });
 
     if (glfwInit() != GLFW_TRUE) {
@@ -107,7 +104,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Triangles demo", nullptr, nullptr);
+    GLFWwindow* window =
+        glfwCreateWindow(800, 600, "Triangles demo", nullptr, nullptr);
     if (window == nullptr) {
         std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
@@ -124,18 +122,15 @@ int main() {
 
     glfwSwapInterval(1);
 
-
     int width = 0;
     int height = 0;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
-    glfwSetFramebufferSizeCallback(
-        window,
-        [](GLFWwindow*, int newWidth, int newHeight) {
-            glViewport(0, 0, newWidth, newHeight);
-        }
-    );
+    glfwSetFramebufferSizeCallback(window,
+                                   [](GLFWwindow*, int newWidth, int newHeight) {
+                                       glViewport(0, 0, newWidth, newHeight);
+                                   });
 
     GLuint vao = 0;
     GLuint vbo = 0;
@@ -146,42 +141,34 @@ int main() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(vertices),
-        vertices,
-        GL_STATIC_DRAW
-    );
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE,
-        9 * sizeof(float),
-        nullptr
-    );
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(
-        1, 3, GL_FLOAT, GL_FALSE,
-        9 * sizeof(float),
-        reinterpret_cast<const void*>(3 * sizeof(float))
-    );
+    glVertexAttribPointer(1,
+                          3,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          9 * sizeof(float),
+                          reinterpret_cast<const void*>(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(
-        2, 3, GL_FLOAT, GL_FALSE,
-        9 * sizeof(float),
-        reinterpret_cast<const void*>(6 * sizeof(float))
-    );
+    glVertexAttribPointer(2,
+                          3,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          9 * sizeof(float),
+                          reinterpret_cast<const void*>(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    const GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
 
-
-    const GLuint vertexShader   = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-
-    const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    const GLuint fragmentShader =
+        compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     if (vertexShader == 0 || fragmentShader == 0) {
         if (vertexShader != 0) {
@@ -196,8 +183,6 @@ int main() {
         return 1;
     }
 
-    
-
     const GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
@@ -205,7 +190,7 @@ int main() {
 
     const GLint mvpLocation = glGetUniformLocation(program, "mvp");
 
-    const GLint lightLocation  = glGetUniformLocation(program, "towardLight");
+    const GLint lightLocation = glGetUniformLocation(program, "towardLight");
     const GLint cameraLocation = glGetUniformLocation(program, "cameraPosition");
 
     glDeleteShader(vertexShader);
@@ -238,10 +223,8 @@ int main() {
         glfwPollEvents();
 
         const double currentTime = glfwGetTime();
-        const float deltaTime = std::min(
-            static_cast<float>(currentTime - previousTime),
-            0.1f
-        );
+        const float deltaTime =
+            std::min(static_cast<float>(currentTime - previousTime), 0.1f);
         previousTime = currentTime;
 
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -268,11 +251,7 @@ int main() {
             radius += zoomSpeed * deltaTime;
         }
 
-        pitch = std::clamp(
-            pitch,
-            glm::radians(-85.0f),
-            glm::radians(85.0f)
-        );
+        pitch = std::clamp(pitch, glm::radians(-85.0f), glm::radians(85.0f));
         radius = std::clamp(radius, 1.0f, 10.0f);
 
         glfwGetFramebufferSize(window, &width, &height);
@@ -284,29 +263,22 @@ int main() {
 
         const glm::vec3 target(0.0f, 0.0f, 0.0f);
 
-        const glm::vec3 offset(
-            radius * glm::cos(pitch) * glm::sin(yaw),
-            radius * glm::sin(pitch),
-            radius * glm::cos(pitch) * glm::cos(yaw)
-        );
+        const glm::vec3 offset(radius * glm::cos(pitch) * glm::sin(yaw),
+                               radius * glm::sin(pitch),
+                               radius * glm::cos(pitch) * glm::cos(yaw));
 
         const glm::vec3 cameraPosition = target + offset;
 
         const glm::mat4 model(1.0f);
 
-        const glm::mat4 view = glm::lookAt(
-            cameraPosition,
-            target,
-            glm::vec3(0.0f, 1.0f, 0.0f)
-        );
+        const glm::mat4 view =
+            glm::lookAt(cameraPosition, target, glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-        const glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f),
-            static_cast<float>(width) / static_cast<float>(height),
-            0.1f,
-            100.0f
-        );
+        const glm::mat4 projection =
+            glm::perspective(glm::radians(45.0f),
+                             static_cast<float>(width) / static_cast<float>(height),
+                             0.1f,
+                             100.0f);
 
         const glm::mat4 mvp = projection * view * model;
 
@@ -314,18 +286,9 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(program);
-        glUniform3fv(
-            cameraLocation,
-            1,
-            glm::value_ptr(cameraPosition)
-        );
+        glUniform3fv(cameraLocation, 1, glm::value_ptr(cameraPosition));
 
-        glUniformMatrix4fv(
-            mvpLocation,
-            1,
-            GL_FALSE,
-            glm::value_ptr(mvp)
-        );
+        glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, glm::value_ptr(mvp));
 
         glUniform3f(lightLocation, 0.0f, 0.0f, 1.0f);
 
