@@ -7,6 +7,7 @@ endif()
 project(Triangles VERSION 0.1.0 LANGUAGES CXX)
 
 option(TRIANGLES_BUILD_APP "Build the triangle input parser" OFF)
+
 include(CTest)
 
 function(triangles_configure_target target)
@@ -62,6 +63,11 @@ if(TRIANGLES_BUILD_APP)
 endif()
 
 option(TRIANGLES_BUILD_VISUALIZER "Build the visualizer window and backend factory" OFF)
+option(TRIANGLES_BUILD_RENDER_TEST "Build the interactive lighting development demo" OFF)
+
+if(TRIANGLES_BUILD_RENDER_TEST AND NOT TRIANGLES_BUILD_VISUALIZER)
+    message(FATAL_ERROR "TRIANGLES_BUILD_RENDER_TEST requires TRIANGLES_BUILD_VISUALIZER")
+endif()
 
 if(TRIANGLES_BUILD_VISUALIZER)
     enable_language(C)
@@ -87,10 +93,8 @@ if(TRIANGLES_BUILD_VISUALIZER)
     target_compile_features(glad PRIVATE c_std_99)
     target_include_directories(glad SYSTEM PUBLIC "${glad_source_dir}/include")
 
-endif()
-
-if(TRIANGLES_BUILD_VISUALIZER)
     find_package(Threads REQUIRED)
+
     add_library(triangles_visualizer
         visualizer/backendFactory.cpp
         visualizer/scene/camera.cpp
@@ -110,19 +114,21 @@ if(TRIANGLES_BUILD_VISUALIZER)
     triangles_configure_target(triangles_visualizer)
     set_property(TARGET triangles_visualizer PROPERTY CXX_SCAN_FOR_MODULES OFF)
 
-    add_executable(renderTest renderTest.cpp)
-    target_link_libraries(renderTest PRIVATE triangles_visualizer glfw)
-    target_compile_definitions(renderTest PRIVATE GLFW_INCLUDE_NONE)
-    triangles_configure_target(renderTest)
-    set_property(TARGET renderTest PROPERTY CXX_SCAN_FOR_MODULES OFF)
+    if(TRIANGLES_BUILD_RENDER_TEST)
+        add_executable(renderTest renderTest.cpp)
+        target_link_libraries(renderTest PRIVATE triangles_visualizer glfw)
+        target_compile_definitions(renderTest PRIVATE GLFW_INCLUDE_NONE)
+        triangles_configure_target(renderTest)
+        set_property(TARGET renderTest PROPERTY CXX_SCAN_FOR_MODULES OFF)
+    endif()
 
-    include(CTest)
     if(BUILD_TESTING)
         add_executable(camera_controller_test tests/camera_controller.cpp)
         target_link_libraries(camera_controller_test PRIVATE triangles_visualizer)
         triangles_configure_target(camera_controller_test)
         set_property(TARGET camera_controller_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
         add_test(NAME camera_controller COMMAND camera_controller_test)
+
         add_executable(lighting_test tests/lighting.cpp)
         target_link_libraries(lighting_test PRIVATE triangles_visualizer)
         triangles_configure_target(lighting_test)

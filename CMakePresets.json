@@ -48,16 +48,18 @@
       "cacheVariables": {
         "TRIANGLES_BUILD_APP": true,
         "TRIANGLES_BUILD_VISUALIZER": true,
+        "TRIANGLES_BUILD_RENDER_TEST": true,
         "CMAKE_CXX_FLAGS": "$env{CXXFLAGS}",
         "CMAKE_EXPORT_COMPILE_COMMANDS": true
       }
     },
     {
       "name": "visualizer",
-      "displayName": "GLFW window example",
+      "displayName": "Visualizer development demo",
       "inherits": "debug",
       "cacheVariables": {
-        "TRIANGLES_BUILD_VISUALIZER": true
+        "TRIANGLES_BUILD_VISUALIZER": true,
+        "TRIANGLES_BUILD_RENDER_TEST": true
       }
     }
   ],

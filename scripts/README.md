@@ -92,6 +92,12 @@ when updating nixpkgs or LLVM.
 
 ## Code quality
 
+The `quality` preset includes the parser, visualizer and interactive `renderTest`
+so clang-tidy receives compilation commands for every project source.
+`TRIANGLES_BUILD_RENDER_TEST` defaults to `OFF`; the `visualizer` and `quality`
+presets enable it for development. Building the visualizer library directly does
+not build the interactive demo. Set `BUILD_TESTING=OFF` for a build without tests.
+
 ```sh
 python3 scripts/code_quality.py format
 python3 scripts/code_quality.py format-fix
