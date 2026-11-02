@@ -6,7 +6,7 @@
 
 #include "intersectionData.hpp"
 
-import geometry
+import geometry;
 
 namespace triangles {
 
@@ -25,7 +25,7 @@ private:
         double orient;
     }
 
-    struct planeRelativeTriangle_t{
+    struct planeRelativeTriangle_t {
         std::array<planeRelativeVertex_t, 3> vertices;
         trianglePosToPlane_t relation;
     };

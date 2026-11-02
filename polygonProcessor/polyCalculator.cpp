@@ -14,8 +14,10 @@ namespace {
 constexpr double orientationEpsilon = 1e-9;
 
 int orientationSign(double orientation) {
-    if (orientation > orientationEpsilon) return 1;
-    if (orientation < -orientationEpsilon) return -1;
+    if (orientation > orientationEpsilon)
+        return 1;
+    if (orientation < -orientationEpsilon)
+        return -1;
     return 0;
 }
 
@@ -30,15 +32,19 @@ void canonicalizeTriangle(planeRelativeTriangle_t& triangle,
     // zeros, prefer the nonzero vertex, except for a lone vertex on the plane.
     std::size_t isolated = 0;
     if (a != 0) {
-        if (b == a) isolated = 2;
-        else if (c == a) isolated = 1;
+        if (b == a)
+            isolated = 2;
+        else if (c == a)
+            isolated = 1;
     } else if (b != 0) {
-        if (b != c) isolated = 1;
+        if (b != c)
+            isolated = 1;
     } else {
         isolated = 2;
     }
 
-    std::rotate(triangle.vertices.begin(), triangle.vertices.begin() + isolated,
+    std::rotate(triangle.vertices.begin(),
+                triangle.vertices.begin() + isolated,
                 triangle.vertices.end());
 
     // A nonzero isolated vertex must be on the positive normal side.
@@ -59,8 +65,10 @@ struct Point2D {
 };
 
 Point2D projectPoint(const geometry::point_t& point, std::size_t droppedAxis) {
-    if (droppedAxis == 0) return {point.y(), point.z()};
-    if (droppedAxis == 1) return {point.x(), point.z()};
+    if (droppedAxis == 0)
+        return {point.y(), point.z()};
+    if (droppedAxis == 1)
+        return {point.x(), point.z()};
     return {point.x(), point.y()};
 }
 
@@ -76,38 +84,42 @@ bool hasSeparatingEdge(const std::array<Point2D, 3>& first,
         const int interior = orientationSign(orient2D(a, b, first[(i + 2) % 3]));
         bool allOutside = true;
         for (const auto& point : second) {
-            if (orientationSign(orient2D(a, b, point)) != -interior || interior == 0) {
+            if (orientationSign(orient2D(a, b, point)) != -interior ||
+                interior == 0) {
                 allOutside = false;
                 break;
             }
         }
-        if (allOutside) return true;
+        if (allOutside)
+            return true;
     }
     return false;
 }
 
 bool isTrianglesIntersect2D(const geometry::triangle_t& first,
                             const geometry::triangle_t& second) {
-    const auto normal = geometry::vector_t(first.a(), first.b()).cross(
-        geometry::vector_t(first.a(), first.c()));
+    const auto normal = geometry::vector_t(first.a(), first.b())
+                            .cross(geometry::vector_t(first.a(), first.c()));
     const std::array<double, 3> components{
         std::abs(normal.x()), std::abs(normal.y()), std::abs(normal.z())};
-    const std::size_t droppedAxis = std::max_element(components.begin(), components.end())
-                                  - components.begin();
+    const std::size_t droppedAxis =
+        std::max_element(components.begin(), components.end()) - components.begin();
     const std::array<Point2D, 3> projectedFirst{
-        projectPoint(first.a(), droppedAxis), projectPoint(first.b(), droppedAxis),
+        projectPoint(first.a(), droppedAxis),
+        projectPoint(first.b(), droppedAxis),
         projectPoint(first.c(), droppedAxis)};
     const std::array<Point2D, 3> projectedSecond{
-        projectPoint(second.a(), droppedAxis), projectPoint(second.b(), droppedAxis),
+        projectPoint(second.a(), droppedAxis),
+        projectPoint(second.b(), droppedAxis),
         projectPoint(second.c(), droppedAxis)};
-    return !hasSeparatingEdge(projectedFirst, projectedSecond)
-        && !hasSeparatingEdge(projectedSecond, projectedFirst);
+    return !hasSeparatingEdge(projectedFirst, projectedSecond) &&
+           !hasSeparatingEdge(projectedSecond, projectedFirst);
 }
 
 } // namespace
 
 void canonicalizePlaneRelativeTriangles(planeRelativeTriangle_t& first,
-                                       planeRelativeTriangle_t& second) {
+                                        planeRelativeTriangle_t& second) {
     assert(first.relation == trianglePosToPlane_t::INTERSECTS);
     assert(second.relation == trianglePosToPlane_t::INTERSECTS);
     canonicalizeTriangle(first, second);
@@ -118,8 +130,8 @@ IntersectionData PolyCalculator::calculateIntersections(
     const std::vector<geometry::polygon_t>& polys) {
     for (const auto& poly : polys) {
         if (poly.numOfPoints() != 3) {
-            throw std::invalid_argument(
-                "Only triangles are supported; other polygons are not supported yet");
+            throw std::invalid_argument("Only triangles are supported; other "
+                                        "polygons are not supported yet");
         }
     }
 
@@ -140,9 +152,8 @@ IntersectionData PolyCalculator::calculateIntersections(
     return intersections;
 }
 
-bool
-PolyCalculator::GuigueDevillers(const geometry::triangle_t& first,
-                                const geometry::triangle_t& second) {
+bool PolyCalculator::GuigueDevillers(const geometry::triangle_t& first,
+                                     const geometry::triangle_t& second) {
     auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
     if (firstPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
         return false;
@@ -169,14 +180,13 @@ PolyCalculator::GuigueDevillers(const geometry::triangle_t& first,
 
     // Guigue–Devillers: the two canonical plane sections must overlap.
     // No intersection points or divisions are needed.
-    return orientationSign(geometry::point_t::orient3D(q1, p2, p1, q2)) >= 0
-        && orientationSign(geometry::point_t::orient3D(p1, p2, r1, r2)) >= 0;
+    return orientationSign(geometry::point_t::orient3D(q1, p2, p1, q2)) >= 0 &&
+           orientationSign(geometry::point_t::orient3D(p1, p2, r1, r2)) >= 0;
 }
 
-planeRelativeTriangle_t getTrianglePosToPlaneOfTriangle(
-    const geometry::triangle_t& curTriangle,
-    const geometry::triangle_t& planeTriangle) {
-
+planeRelativeTriangle_t
+getTrianglePosToPlaneOfTriangle(const geometry::triangle_t& curTriangle,
+                                const geometry::triangle_t& planeTriangle) {
     const double firstVertexOrient = geometry::point_t::orient3D(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.a());
     const double secondVertexOrient = geometry::point_t::orient3D(
@@ -184,18 +194,17 @@ planeRelativeTriangle_t getTrianglePosToPlaneOfTriangle(
     const double thirdVertexOrient = geometry::point_t::orient3D(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.c());
 
-    planeRelativeTriangle_t result{
-        {{{curTriangle.a(), firstVertexOrient},
-          {curTriangle.b(), secondVertexOrient},
-          {curTriangle.c(), thirdVertexOrient}}},
-        trianglePosToPlane_t::DOES_NOT_INTERSECT
-    };
+    planeRelativeTriangle_t result{{{{curTriangle.a(), firstVertexOrient},
+                                     {curTriangle.b(), secondVertexOrient},
+                                     {curTriangle.c(), thirdVertexOrient}}},
+                                   trianglePosToPlane_t::DOES_NOT_INTERSECT};
 
     bool hasPositive = false;
     bool hasNegative = false;
     bool hasZero = false;
 
-    for (double orientation : {firstVertexOrient, secondVertexOrient, thirdVertexOrient}) {
+    for (double orientation :
+         {firstVertexOrient, secondVertexOrient, thirdVertexOrient}) {
         if (orientationSign(orientation) > 0) {
             hasPositive = true;
         } else if (orientationSign(orientation) < 0) {
