@@ -99,6 +99,7 @@ if(TRIANGLES_BUILD_VISUALIZER)
         visualizer/scene/scene.cpp
         visualizer/window/glfwWindow.cpp
         visualizer/visualizer.cpp
+        visualizer/cameraController/orbitCameraController.cpp
         visualizer/renderer/openGLRenderer.cpp
         visualizer/renderer/openGLRenderDataPreparer.cpp
         visualizer/renderer/matrices.cpp
@@ -114,6 +115,15 @@ if(TRIANGLES_BUILD_VISUALIZER)
     target_link_libraries(renderTest PRIVATE triangles_visualizer)
     triangles_configure_target(renderTest)
     set_property(TARGET renderTest PROPERTY CXX_SCAN_FOR_MODULES OFF)
+
+    include(CTest)
+    if(BUILD_TESTING)
+        add_executable(camera_controller_test tests/camera_controller.cpp)
+        target_link_libraries(camera_controller_test PRIVATE triangles_visualizer)
+        triangles_configure_target(camera_controller_test)
+        set_property(TARGET camera_controller_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
+        add_test(NAME camera_controller COMMAND camera_controller_test)
+    endif()
 endif()
 
 if(TRIANGLES_BUILD_OPENGL_DEMO)
