@@ -97,6 +97,7 @@ if(TRIANGLES_BUILD_VISUALIZER)
         visualizer/backendFactory.cpp
         visualizer/scene/camera.cpp
         visualizer/scene/scene.cpp
+        visualizer/scene/lightning/lighting.cpp
         visualizer/window/glfwWindow.cpp
         visualizer/visualizer.cpp
         visualizer/cameraController/orbitCameraController.cpp
@@ -112,7 +113,8 @@ if(TRIANGLES_BUILD_VISUALIZER)
     set_property(TARGET triangles_visualizer PROPERTY CXX_SCAN_FOR_MODULES OFF)
 
     add_executable(renderTest renderTest.cpp)
-    target_link_libraries(renderTest PRIVATE triangles_visualizer)
+    target_link_libraries(renderTest PRIVATE triangles_visualizer glfw)
+    target_compile_definitions(renderTest PRIVATE GLFW_INCLUDE_NONE)
     triangles_configure_target(renderTest)
     set_property(TARGET renderTest PROPERTY CXX_SCAN_FOR_MODULES OFF)
 
@@ -123,6 +125,11 @@ if(TRIANGLES_BUILD_VISUALIZER)
         triangles_configure_target(camera_controller_test)
         set_property(TARGET camera_controller_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
         add_test(NAME camera_controller COMMAND camera_controller_test)
+        add_executable(lighting_test tests/lighting.cpp)
+        target_link_libraries(lighting_test PRIVATE triangles_visualizer)
+        triangles_configure_target(lighting_test)
+        set_property(TARGET lighting_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
+        add_test(NAME lighting COMMAND lighting_test)
     endif()
 endif()
 
