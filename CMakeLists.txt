@@ -130,4 +130,13 @@ if(BUILD_TESTING)
         TRIANGLES_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
+
+    add_executable(poly_world_tests tests/poly_world_test.cpp parser/parser.cpp)
+    target_include_directories(poly_world_tests PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/polygonProcessor")
+    target_link_libraries(poly_world_tests PRIVATE
+        GeneralFunctions::lexer GeneralFunctions::files GTest::gtest_main)
+    triangles_configure_target(poly_world_tests)
+    gtest_discover_tests(poly_world_tests)
 endif()

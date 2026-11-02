@@ -12,7 +12,7 @@ struct RenderVertex {
 };
 
 struct RenderPrimitive {
-    enum class Topology { Points, Lines, Triangles };
+    enum class Topology { POINTS, LINES, TRIANGLES };
 
     Topology topology;
     std::array<float, 4> color;

@@ -8,7 +8,7 @@ namespace triangles {
 class Point;
 
 struct PolyIntersection {
-    enum class Kind { Point, Segment, Polygon };
+    enum class Kind { POINT, SEGMENT, POLYGON };
 
     Kind kind;
     // One point, two segment endpoints, or polygon vertices in boundary order.
