@@ -45,7 +45,7 @@ def tidy_command(source, build_dir, compiled, options=()):
         command.extend(["-p", str(build_dir)])
     else:
         # Standalone tools not declared in CMake still receive analysis.
-        command.extend(["--", "-std=c++17", "-I", str(ROOT)])
+        command.extend(["--", "-std=c++20", "-I", str(ROOT)])
     return command
 
 

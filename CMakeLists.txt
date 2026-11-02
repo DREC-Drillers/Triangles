@@ -61,11 +61,9 @@ if(TRIANGLES_BUILD_APP)
     triangles_configure_target(triangles)
 endif()
 
-option(TRIANGLES_BUILD_OPENGL_DEMO "Build the OpenGL example" OFF)
-
 option(TRIANGLES_BUILD_VISUALIZER "Build the visualizer window and backend factory" OFF)
 
-if(TRIANGLES_BUILD_OPENGL_DEMO OR TRIANGLES_BUILD_VISUALIZER)
+if(TRIANGLES_BUILD_VISUALIZER)
     enable_language(C)
     find_package(glfw3 CONFIG REQUIRED)
     find_package(glm CONFIG REQUIRED)
@@ -131,14 +129,6 @@ if(TRIANGLES_BUILD_VISUALIZER)
         set_property(TARGET lighting_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
         add_test(NAME lighting COMMAND lighting_test)
     endif()
-endif()
-
-if(TRIANGLES_BUILD_OPENGL_DEMO)
-    add_executable(opengl_demo examples/opengl_demo.cpp)
-    target_link_libraries(opengl_demo PRIVATE glfw glad glm::glm)
-    target_compile_definitions(opengl_demo PRIVATE GLFW_INCLUDE_NONE)
-
-    triangles_configure_target(opengl_demo)
 endif()
 
 if(BUILD_TESTING)
