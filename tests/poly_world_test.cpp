@@ -99,18 +99,17 @@ TEST(PolyWorld, ParsesInputAndPassesWorldToProcessor) {
     auto tokens = lexer::Lexer("3 0 0 0 2 0 0 0 2 0").tokenize();
     const auto input = triangles::Parser{}.parse(tokens);
     TriangleWorld world(input);
-    const TriangleProcessor processor(std::move(world));
+    const TriangleProcessor processor(world);
     ASSERT_EQ(processor.world().polys().size(), 1U);
     EXPECT_DOUBLE_EQ(processor.world().polys()[0].points()[1].x(), 2);
     EXPECT_DOUBLE_EQ(processor.world().polys()[0].points()[2].y(), 2);
 }
 
-TEST(PolyProcessor, CopiesLvalueWorldWithoutSharingVertices) {
-    TriangleWorld world(triangleData());
+TEST(PolyProcessor, RefersToExistingWorldWithoutCopyingPolygons) {
+    const TriangleWorld world(triangleData());
     const TriangleProcessor processor(world);
-    ASSERT_EQ(processor.world().polys().size(), world.polys().size());
-    EXPECT_NE(&processor.world().polys()[0].points()[0],
-              &world.polys()[0].points()[0]);
+    EXPECT_EQ(&processor.world(), &world);
+    EXPECT_EQ(&processor.world().polys()[0], &world.polys()[0]);
 }
 
 } // namespace
