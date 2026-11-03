@@ -10,7 +10,7 @@
     };
 
     generalFunctions = {
-      url = "github:DREC-Drillers/generalFunctions/main";
+      url = "git+https://github.com/DREC-Drillers/generalFunctions.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

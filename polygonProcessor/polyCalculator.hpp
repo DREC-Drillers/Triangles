@@ -1,26 +1,25 @@
 #pragma once
 
-#include <cstddef>
 #include <optional>
 #include <vector>
 
 #include "intersectionData.hpp"
 
+import geometry;
+
 namespace triangles {
 
-// template <std::size_t DimPoly>
-// class Poly;
-
-template <std::size_t DimPoly>
 class PolyCalculator {
 public:
     // Collect all intersecting pairs and their intersection geometry.
-    IntersectionData calculateIntersections(const std::vector<Poly<DimPoly>>& polys);
+    IntersectionData
+    calculateIntersections(const std::vector<geometry::polygon_t>& polys);
 
 private:
     // std::nullopt means the pair does not intersect.
-    std::optional<PolyIntersection> IntersectsPoly(const Poly<DimPoly>& first,
-                                                   const Poly<DimPoly>& second);
+    std::optional<PolyIntersection>
+    intersectsPoly(const geometry::polygon_t& first,
+                   const geometry::polygon_t& second);
 };
 
 } // namespace triangles

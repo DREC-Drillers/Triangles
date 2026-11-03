@@ -4,29 +4,32 @@
 #include <vector>
 
 #include "initPolysData.hpp"
-#include "intersectionData.hpp"
-#include "polyCalculator.hpp"
 
 namespace triangles {
 
-template <std::size_t DimWorld, std::size_t DimPoly>
+template <std::size_t dimWorld>
 class PolyWorld {
+    static_assert(dimWorld == 3,
+                  "InitPolysData currently supports only 3D coordinates");
+
 private:
-    std::vector<Poly<DimPoly>> polys_;
-    IntersectionData intersectionData_;
+    std::vector<geometry::polygon_t> polys_;
 
 public:
-    PolyWorld(const InitPolysData& initData);
-
-    const IntersectionData& calculateIntersections() {
-        PolyCalculator<DimPoly> calculator;
-        intersectionData_ = calculator.calculateIntersections(polys_);
-        return intersectionData_;
+    explicit PolyWorld(const InitPolysData& initData) {
+        polys_.reserve(initData.data.size());
+        for (const auto& vertices : initData.data) {
+            polys_.emplace_back(vertices);
+        }
     }
 
-    const std::vector<Poly<DimPoly>>& polys() const { return polys_; }
+    PolyWorld(const PolyWorld&) = default;
+    PolyWorld(PolyWorld&&) = default;
+    PolyWorld& operator=(PolyWorld&&) = default;
 
-    const IntersectionData& intersectionData() const { return intersectionData_; }
+    PolyWorld& operator=(const PolyWorld&) = default;
+
+    const std::vector<geometry::polygon_t>& polys() const { return polys_; }
 };
 
 } // namespace triangles

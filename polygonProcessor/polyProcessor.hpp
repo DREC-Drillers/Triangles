@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <utility>
 
 #include "../render/renderer.hpp"
 #include "initPolysData.hpp"
@@ -10,22 +11,24 @@
 
 namespace triangles {
 
-template <std::size_t DimWorld, std::size_t DimPoly>
+template <std::size_t dimWorld>
 class PolyProcessor {
 private:
-    PolyWorld<DimWorld, DimPoly> world_;
+    PolyWorld<dimWorld> world_;
     Renderer renderer_;
     RenderStyle renderStyle_;
 
 public:
-    PolyProcessor(const InitPolysData& initData);
+    explicit PolyProcessor(PolyWorld<dimWorld> world) : world_(std::move(world)) {}
+
+    const PolyWorld<dimWorld>& world() const { return world_; }
 
     const IntersectionData& calculateIntersections() {
         return world_.calculateIntersections();
     }
 
     void drawPolys() {
-        RenderDataPreparer<DimWorld, DimPoly> preparer;
+        RenderDataPreparer<dimWorld> preparer;
         RenderData data = preparer.prepare(
             world_.polys(), world_.intersectionData(), renderStyle_);
         renderer_.draw(data);

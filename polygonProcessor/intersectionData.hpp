@@ -3,17 +3,17 @@
 #include <cstddef>
 #include <vector>
 
+import geometry;
+
 namespace triangles {
 
-class Point;
-
 struct PolyIntersection {
-    enum class Kind { Point, Segment, Polygon };
+    enum class Kind { POINT, SEGMENT, POLYGON };
 
     Kind kind;
     // One point, two segment endpoints, or polygon vertices in boundary order.
     // The polygon's first vertex is not repeated at the end.
-    std::vector<Point> points;
+    std::vector<geometry::point_t> points;
 };
 
 struct IntersectionData {
