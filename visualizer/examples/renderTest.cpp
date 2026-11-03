@@ -13,11 +13,11 @@
 #include <utility>
 #include <vector>
 
-#include "visualizer/backendFactory.hpp"
-#include "visualizer/cameraController/orbitCameraController.hpp"
-#include "visualizer/scene/lightning/light.hpp"
-#include "visualizer/visualizer.hpp"
-#include "visualizer/window/glfwWindow.hpp"
+#include "backendFactory.hpp"
+#include "cameraController/orbitCameraController.hpp"
+#include "scene/lightning/light.hpp"
+#include "visualizer.hpp"
+#include "window/glfwWindow.hpp"
 
 namespace {
 
@@ -29,8 +29,7 @@ struct TriangleSettings {
     std::array<float, 4> color;
 };
 
-triangles::visualizer::Quaternion triangleRotation(float rotationDegrees,
-                                                   float tiltDegrees) {
+visualizer::Quaternion triangleRotation(float rotationDegrees, float tiltDegrees) {
     const float halfRotation = rotationDegrees * std::numbers::pi_v<float> / 360.0f;
     const float halfTilt = tiltDegrees * std::numbers::pi_v<float> / 360.0f;
 
@@ -46,9 +45,9 @@ triangles::visualizer::Quaternion triangleRotation(float rotationDegrees,
             cosTilt * cosRotation};
 }
 
-std::array<triangles::visualizer::LightId, 3>
-configureLighting(triangles::visualizer::Lighting& lighting) {
-    using namespace triangles::visualizer;
+std::array<visualizer::LightId, 3>
+configureLighting(visualizer::Lighting& lighting) {
+    using namespace visualizer;
 
     lighting.clear();
 
@@ -73,8 +72,8 @@ configureLighting(triangles::visualizer::Lighting& lighting) {
 
 class LightingDemoControls {
 public:
-    LightingDemoControls(triangles::visualizer::Scene& scene,
-                         std::array<triangles::visualizer::LightId, 3> lights,
+    LightingDemoControls(visualizer::Scene& scene,
+                         std::array<visualizer::LightId, 3> lights,
                          GLFWwindow* window)
         : scene_(scene), lights_(lights), window_(window) {
         for (const auto& [id, object] : scene_.objects()) {
@@ -161,11 +160,11 @@ private:
         std::cout << title << '\n';
     }
 
-    triangles::visualizer::Scene& scene_;
-    std::array<triangles::visualizer::LightId, 3> lights_;
+    visualizer::Scene& scene_;
+    std::array<visualizer::LightId, 3> lights_;
     GLFWwindow* window_;
 
-    std::vector<std::pair<triangles::visualizer::ObjectId, std::array<float, 4>>>
+    std::vector<std::pair<visualizer::ObjectId, std::array<float, 4>>>
         originalColors_;
 
     static constexpr std::array KEYS{GLFW_KEY_1,
@@ -182,8 +181,8 @@ private:
     bool gray_ = true;
 };
 
-void runDemo(triangles::visualizer::Viewer& viewer,
-             triangles::visualizer::Window& window, LightingDemoControls& controls) {
+void runDemo(visualizer::Viewer& viewer, visualizer::Window& window,
+             LightingDemoControls& controls) {
     auto previousTime = std::chrono::steady_clock::now();
 
     while (!window.shouldClose()) {
@@ -213,7 +212,7 @@ void runDemo(triangles::visualizer::Viewer& viewer,
 } // namespace
 
 int main() {
-    using namespace triangles::visualizer;
+    using namespace visualizer;
 
     try {
         Scene scene;

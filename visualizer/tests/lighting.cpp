@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <utility>
 
-#include "visualizer/renderer/openGLLightDataCollector.hpp"
-#include "visualizer/scene/scene.hpp"
+#include "renderer/openGLLightDataCollector.hpp"
+#include "scene/scene.hpp"
 
-using namespace triangles::visualizer;
+using namespace visualizer;
 
 namespace {
 

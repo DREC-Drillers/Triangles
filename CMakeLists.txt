@@ -70,71 +70,9 @@ if(TRIANGLES_BUILD_RENDER_TEST AND NOT TRIANGLES_BUILD_VISUALIZER)
 endif()
 
 if(TRIANGLES_BUILD_VISUALIZER)
-    enable_language(C)
-    find_package(glfw3 CONFIG REQUIRED)
-    find_package(glm CONFIG REQUIRED)
-
-    set(GLAD_SOURCE_DIR ""
-        CACHE PATH "Override path to generated GLAD 2 sources")
-    if(GLAD_SOURCE_DIR)
-        set(glad_source_dir "${GLAD_SOURCE_DIR}")
-    else()
-        set(glad_source_dir "$ENV{GLAD_SOURCE_DIR}")
-    endif()
-
-    if(NOT EXISTS "${glad_source_dir}/src/gl.c" OR
-       NOT EXISTS "${glad_source_dir}/include/glad/gl.h")
-        message(FATAL_ERROR
-            "GLAD 2 sources not found at '${glad_source_dir}'. Run inside nix develop "
-            "or pass -DGLAD_SOURCE_DIR=/path/to/generated/glad")
-    endif()
-
-    add_library(glad STATIC "${glad_source_dir}/src/gl.c")
-    target_compile_features(glad PRIVATE c_std_99)
-    target_include_directories(glad SYSTEM PUBLIC "${glad_source_dir}/include")
-
-    find_package(Threads REQUIRED)
-
-    add_library(triangles_visualizer
-        visualizer/backendFactory.cpp
-        visualizer/scene/camera.cpp
-        visualizer/scene/scene.cpp
-        visualizer/scene/lightning/lighting.cpp
-        visualizer/window/glfwWindow.cpp
-        visualizer/visualizer.cpp
-        visualizer/cameraController/orbitCameraController.cpp
-        visualizer/renderer/openGLRenderer.cpp
-        visualizer/renderer/openGLRenderDataPreparer.cpp
-        visualizer/renderer/matrices.cpp
-        visualizer/renderer/shaderProgram.cpp)
-    target_include_directories(triangles_visualizer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(triangles_visualizer PRIVATE glfw glad glm::glm Threads::Threads)
-    target_compile_definitions(triangles_visualizer PRIVATE GLFW_INCLUDE_NONE)
-    target_compile_features(triangles_visualizer PUBLIC cxx_std_20)
-    triangles_configure_target(triangles_visualizer)
-    set_property(TARGET triangles_visualizer PROPERTY CXX_SCAN_FOR_MODULES OFF)
-
-    if(TRIANGLES_BUILD_RENDER_TEST)
-        add_executable(renderTest renderTest.cpp)
-        target_link_libraries(renderTest PRIVATE triangles_visualizer glfw)
-        target_compile_definitions(renderTest PRIVATE GLFW_INCLUDE_NONE)
-        triangles_configure_target(renderTest)
-        set_property(TARGET renderTest PROPERTY CXX_SCAN_FOR_MODULES OFF)
-    endif()
-
-    if(BUILD_TESTING)
-        add_executable(camera_controller_test tests/camera_controller.cpp)
-        target_link_libraries(camera_controller_test PRIVATE triangles_visualizer)
-        triangles_configure_target(camera_controller_test)
-        set_property(TARGET camera_controller_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
-        add_test(NAME camera_controller COMMAND camera_controller_test)
-
-        add_executable(lighting_test tests/lighting.cpp)
-        target_link_libraries(lighting_test PRIVATE triangles_visualizer)
-        triangles_configure_target(lighting_test)
-        set_property(TARGET lighting_test PROPERTY CXX_SCAN_FOR_MODULES OFF)
-        add_test(NAME lighting COMMAND lighting_test)
-    endif()
+    set(VISUALIZER_BUILD_EXAMPLES ${TRIANGLES_BUILD_RENDER_TEST})
+    set(VISUALIZER_BUILD_TESTS ${BUILD_TESTING})
+    add_subdirectory(visualizer)
 endif()
 
 if(BUILD_TESTING)

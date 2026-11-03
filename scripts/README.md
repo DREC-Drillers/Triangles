@@ -98,6 +98,11 @@ so clang-tidy receives compilation commands for every project source.
 presets enable it for development. Building the visualizer library directly does
 not build the interactive demo. Set `BUILD_TESTING=OFF` for a build without tests.
 
+The visualizer has a standalone CMake project in `visualizer/`, with `debug`,
+`release` and `demo` presets. Its public target is `Visualizer::visualizer` and
+its namespace is `visualizer`. The root project enables it through
+`add_subdirectory(visualizer)`.
+
 ```sh
 python3 scripts/code_quality.py format
 python3 scripts/code_quality.py format-fix

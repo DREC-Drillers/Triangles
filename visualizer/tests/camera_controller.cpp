@@ -2,10 +2,10 @@
 #include <memory>
 #include <stdexcept>
 
-#include "visualizer/cameraController/orbitCameraController.hpp"
-#include "visualizer/visualizer.hpp"
+#include "cameraController/orbitCameraController.hpp"
+#include "visualizer.hpp"
 
-using namespace triangles::visualizer;
+using namespace visualizer;
 
 void require(bool condition) {
     if (!condition) {
