@@ -92,16 +92,16 @@ when updating nixpkgs or LLVM.
 
 ## Code quality
 
-The `quality` preset includes the parser, visualizer and interactive `renderTest`
-so clang-tidy receives compilation commands for every project source.
-`TRIANGLES_BUILD_RENDER_TEST` defaults to `OFF`; the `visualizer` and `quality`
-presets enable it for development. Building the visualizer library directly does
-not build the interactive demo. Set `BUILD_TESTING=OFF` for a build without tests.
+The `quality` preset builds the parser and links the installed Visualizer package.
+The library lives in [DREC-Drillers/3D-Visualizer](https://github.com/DREC-Drillers/3D-Visualizer).
+`nix develop` provides its Nix package, pinned by `flake.lock`; CMake connects it
+through `find_package(Visualizer CONFIG REQUIRED)` and `Visualizer::visualizer`.
+Update the dependency with `nix flake lock --update-input visualizer`.
 
-The visualizer has a standalone CMake project in `visualizer/`, with `debug`,
-`release` and `demo` presets. Its public target is `Visualizer::visualizer` and
-its namespace is `visualizer`. The root project enables it through
-`add_subdirectory(visualizer)`.
+Visualizer examples, tests, formatting and clang-tidy run in its own repository.
+To run the lighting example there, enter `nix develop`, then use the `demo` preset:
+`cmake --preset demo`, `cmake --build --preset demo`, `./build/demo/renderTest`.
+Set `BUILD_TESTING=OFF` for a Triangles build without tests.
 
 ```sh
 python3 scripts/code_quality.py format

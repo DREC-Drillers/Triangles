@@ -1,5 +1,5 @@
 в nix отдельно нужно устанавливать nixGL для поиска функций драйвера видеокарты
 ```sh
 nix run github:nix-community/nixGL#nixGLIntel -- \
-  ./build/visualizer/renderTest
+  /path/to/3D-Visualizer/build/demo/renderTest
 ```

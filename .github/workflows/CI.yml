@@ -31,26 +31,6 @@ jobs:
       - name: Run GoogleTest suites
         run: nix develop --command ctest --preset ${{ matrix.preset }}
 
-  visualizer:
-    name: Standalone visualizer library
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-      - name: Build, test and install the standalone library
-        run: |
-          nix develop --command bash -euo pipefail -c '
-            cmake -S visualizer -B build/standalone -G Ninja -DVISUALIZER_BUILD_TESTS=ON
-            cmake --build build/standalone --parallel 2
-            ctest --test-dir build/standalone --output-on-failure --no-tests=error
-            cmake --install build/standalone --prefix "$PWD/build/visualizer-install"
-            cmake -S visualizer/tests/consumer -B build/consumer -G Ninja \
-              -DCMAKE_PREFIX_PATH="$PWD/build/visualizer-install"
-            cmake --build build/consumer --parallel 2
-            ./build/consumer/consumer
-          '
-
   format:
     name: Check C++ formatting
     runs-on: ubuntu-24.04

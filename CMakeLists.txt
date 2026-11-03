@@ -62,17 +62,14 @@ if(TRIANGLES_BUILD_APP)
     triangles_configure_target(triangles)
 endif()
 
-option(TRIANGLES_BUILD_VISUALIZER "Build the visualizer window and backend factory" OFF)
-option(TRIANGLES_BUILD_RENDER_TEST "Build the interactive lighting development demo" OFF)
-
-if(TRIANGLES_BUILD_RENDER_TEST AND NOT TRIANGLES_BUILD_VISUALIZER)
-    message(FATAL_ERROR "TRIANGLES_BUILD_RENDER_TEST requires TRIANGLES_BUILD_VISUALIZER")
-endif()
+option(TRIANGLES_BUILD_VISUALIZER "Link the installed Visualizer package" OFF)
 
 if(TRIANGLES_BUILD_VISUALIZER)
-    set(VISUALIZER_BUILD_EXAMPLES ${TRIANGLES_BUILD_RENDER_TEST})
-    set(VISUALIZER_BUILD_TESTS ${BUILD_TESTING})
-    add_subdirectory(visualizer)
+    find_package(Visualizer 0.1 CONFIG REQUIRED)
+
+    if(TARGET triangles)
+        target_link_libraries(triangles PRIVATE Visualizer::visualizer)
+    endif()
 endif()
 
 if(BUILD_TESTING)
