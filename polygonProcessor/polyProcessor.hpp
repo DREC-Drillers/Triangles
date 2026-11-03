@@ -11,25 +11,24 @@
 
 namespace triangles {
 
-template <std::size_t dimWorld, std::size_t dimPoly>
+template <std::size_t dimWorld>
 class PolyProcessor {
 private:
-    PolyWorld<dimWorld, dimPoly> world_;
+    PolyWorld<dimWorld> world_;
     Renderer renderer_;
     RenderStyle renderStyle_;
 
 public:
-    explicit PolyProcessor(PolyWorld<dimWorld, dimPoly> world)
-        : world_(std::move(world)) {}
+    explicit PolyProcessor(PolyWorld<dimWorld> world) : world_(std::move(world)) {}
 
-    const PolyWorld<dimWorld, dimPoly>& world() const { return world_; }
+    const PolyWorld<dimWorld>& world() const { return world_; }
 
     const IntersectionData& calculateIntersections() {
         return world_.calculateIntersections();
     }
 
     void drawPolys() {
-        RenderDataPreparer<dimWorld, dimPoly> preparer;
+        RenderDataPreparer<dimWorld> preparer;
         RenderData data = preparer.prepare(
             world_.polys(), world_.intersectionData(), renderStyle_);
         renderer_.draw(data);

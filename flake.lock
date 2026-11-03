@@ -25,18 +25,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1793542972,
-        "narHash": "sha256-sJs2FcwIBjP0XPB414iqgQIoB8FLhq/m1wyVyhjGut8=",
-        "owner": "DREC-Drillers",
-        "repo": "generalFunctions",
-        "rev": "d72d69e8640c212f1f4374c5c19f1fbebfdafa77",
-        "type": "github"
+        "lastModified": 1793701491,
+        "narHash": "sha256-9u5SCZRWzMC2FDY5t8EEqQLQqkDqYWlE0Lf8d88oOts=",
+        "ref": "main",
+        "rev": "518678f712c81a9580d122f1dece5b2f44ad0883",
+        "revCount": 40,
+        "type": "git",
+        "url": "https://github.com/DREC-Drillers/generalFunctions.git"
       },
       "original": {
-        "owner": "DREC-Drillers",
         "ref": "main",
-        "repo": "generalFunctions",
-        "type": "github"
+        "type": "git",
+        "url": "https://github.com/DREC-Drillers/generalFunctions.git"
       }
     },
     "nixGL": {

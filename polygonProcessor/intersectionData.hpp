@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <vector>
 
-namespace triangles {
+import geometry;
 
-class Point;
+namespace triangles {
 
 struct PolyIntersection {
     enum class Kind { POINT, SEGMENT, POLYGON };
@@ -13,7 +13,7 @@ struct PolyIntersection {
     Kind kind;
     // One point, two segment endpoints, or polygon vertices in boundary order.
     // The polygon's first vertex is not repeated at the end.
-    std::vector<Point> points;
+    std::vector<geometry::point_t> points;
 };
 
 struct IntersectionData {

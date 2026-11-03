@@ -138,7 +138,9 @@ if(BUILD_TESTING)
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/polygonProcessor")
     target_link_libraries(poly_world_tests PRIVATE
-        GeneralFunctions::lexer GeneralFunctions::files GTest::gtest_main)
+        GeneralFunctions::lexer GeneralFunctions::files
+        GeneralFunctions::geometry GTest::gtest_main)
+    set_property(TARGET poly_world_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     triangles_configure_target(poly_world_tests)
     gtest_discover_tests(poly_world_tests)
 endif()
