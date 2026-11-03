@@ -24,7 +24,8 @@ int main(int argc, char* argv[]) {
             std::cout << "Polygon " << i + 1 << ":\n";
             std::cout << "  Vertices: " << polygon.numOfPoints() << '\n';
             std::cout << "  Area: " << polygon.area() << '\n';
-            std::cout << "  Unit normal: " << normal.x() << ' ' << normal.y() << ' ' << normal.z() << '\n';
+            std::cout << "  Unit normal: " << normal.x() << ' ' << normal.y() << ' '
+                      << normal.z() << '\n';
             std::cout << "  Points:\n";
             for (const auto& point : polygon.points()) {
                 std::cout << "    " << point.x() << ' ' << point.y() << ' '
