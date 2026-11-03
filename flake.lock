@@ -80,7 +80,8 @@
       "inputs": {
         "generalFunctions": "generalFunctions",
         "nixGL": "nixGL",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "visualizer": "visualizer"
       }
     },
     "systems": {
@@ -95,6 +96,30 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "visualizer": {
+      "inputs": {
+        "nixGL": [
+          "nixGL"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793704782,
+        "narHash": "sha256-a9uCSnnJ2Wc3xUTy/6NzIeOuJ29Cm32TFC7rTwwivyM=",
+        "owner": "DREC-Drillers",
+        "repo": "3D-Visualizer",
+        "rev": "8814a1c9cc27b66c6bb650ded8fa436207de0455",
+        "type": "github"
+      },
+      "original": {
+        "owner": "DREC-Drillers",
+        "ref": "main",
+        "repo": "3D-Visualizer",
         "type": "github"
       }
     }

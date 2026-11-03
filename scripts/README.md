@@ -92,6 +92,13 @@ when updating nixpkgs or LLVM.
 
 ## Code quality
 
+The `app` and `quality` presets link the installed
+[Visualizer](https://github.com/DREC-Drillers/3D-Visualizer) library through
+`find_package(Visualizer CONFIG REQUIRED)` and `Visualizer::visualizer`.
+`nix develop` provides the package at the revision pinned in `flake.lock`.
+Update it with `nix flake lock --update-input visualizer`.
+Set `TRIANGLES_BUILD_VISUALIZER=OFF` to build the app without the package.
+
 ```sh
 python3 scripts/code_quality.py format
 python3 scripts/code_quality.py format-fix

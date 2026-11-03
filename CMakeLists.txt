@@ -7,6 +7,8 @@ endif()
 project(Triangles VERSION 0.1.0 LANGUAGES CXX)
 
 option(TRIANGLES_BUILD_APP "Build the triangle input parser" OFF)
+option(TRIANGLES_BUILD_VISUALIZER "Link the installed Visualizer package to the app" OFF)
+
 include(CTest)
 
 function(triangles_configure_target target)
@@ -50,6 +52,11 @@ if(TRIANGLES_BUILD_APP)
         GeneralFunctions::lexer
         GeneralFunctions::files
         GeneralFunctions::geometry)
+
+    if(TRIANGLES_BUILD_VISUALIZER)
+        find_package(Visualizer 0.1 CONFIG REQUIRED)
+        target_link_libraries(triangles PRIVATE Visualizer::visualizer)
+    endif()
 
     set_property(TARGET triangles PROPERTY CXX_SCAN_FOR_MODULES ON)
 
