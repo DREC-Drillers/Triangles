@@ -166,9 +166,6 @@ bool PolyCalculator::GuigueDevillers(const geometry::triangle_t& first,
     if (secondPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
         return false;
     }
-    if (secondPos.relation == trianglePosToPlane_t::BELONGS) {
-        return isTrianglesIntersect2D(first, second);
-    }
 
     canonicalizePlaneRelativeTriangles(firstPos, secondPos);
     const auto& p1 = firstPos.vertices[0].vertex;
