@@ -1,37 +1,33 @@
 #pragma once
 
 #include <cstddef>
-#include <utility>
 
-#include "../render/renderer.hpp"
-#include "initPolysData.hpp"
 #include "intersectionData.hpp"
+#include "polyCalculator.hpp"
 #include "polyWorld.hpp"
-#include "renderDataPreparer.hpp"
 
 namespace triangles {
 
 template <std::size_t dimWorld>
 class PolyProcessor {
 private:
-    PolyWorld<dimWorld> world_;
-    Renderer renderer_;
-    RenderStyle renderStyle_;
+    const PolyWorld<dimWorld>& world_;
 
 public:
-    explicit PolyProcessor(PolyWorld<dimWorld> world) : world_(std::move(world)) {}
+    explicit PolyProcessor(const PolyWorld<dimWorld>& world) : world_(world) {}
+    PolyProcessor(PolyWorld<dimWorld>&&) = delete;
+    PolyProcessor(const PolyWorld<dimWorld>&&) = delete;
 
     const PolyWorld<dimWorld>& world() const { return world_; }
 
-    const IntersectionData& calculateIntersections() {
-        return world_.calculateIntersections();
+    IntersectionData calculateIntersections() const {
+        PolyCalculator calculator;
+        return calculateIntersections(calculator);
     }
 
-    void drawPolys() {
-        RenderDataPreparer<dimWorld> preparer;
-        RenderData data = preparer.prepare(
-            world_.polys(), world_.intersectionData(), renderStyle_);
-        renderer_.draw(data);
+    template <typename Calculator>
+    IntersectionData calculateIntersections(Calculator& calculator) const {
+        return calculator.calculateIntersections(world_.polys());
     }
 };
 
