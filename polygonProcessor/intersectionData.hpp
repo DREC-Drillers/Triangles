@@ -1,13 +1,13 @@
 #pragma once
 
+#include <cstddef>
 #include <utility>
 #include <vector>
 
-import geometry;
-
 namespace triangles {
 
-using IntersectingPair = std::pair<geometry::polygon_t, geometry::polygon_t>;
+// Indices into the input Polygons collection; no geometry is copied or owned.
+using IntersectingPair = std::pair<std::size_t, std::size_t>;
 
 using IntersectionData = std::vector<IntersectingPair>;
 

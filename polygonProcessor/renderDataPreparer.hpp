@@ -6,6 +6,7 @@
 
 #include "../render/renderData.hpp"
 #include "intersectionData.hpp"
+#include "polygons.hpp"
 
 namespace triangles {
 
@@ -23,8 +24,7 @@ public:
     // highlights: Point -> Points, Segment -> Lines, Polygon -> Triangles.
     // Also emit every intersection vertex as Points in intersectionColor.
     // Polygon intersections require triangulation, not just copying their vertices.
-    RenderData prepare(const std::vector<Poly<DimPoly>>& polys,
-                       const IntersectionData& intersections,
+    RenderData prepare(const Polygons& polys, const IntersectionData& intersections,
                        const RenderStyle& style) const;
 };
 

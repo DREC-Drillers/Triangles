@@ -4,38 +4,41 @@
 #include <vector>
 
 #include "intersectionData.hpp"
+#include "polygons.hpp"
 
 import geometry;
 
 namespace triangles {
 
-enum class trianglePosToPlane_t { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
-
-struct planeRelativeVertex_t {
-    geometry::point_t vertex;
-    double orient;
-};
-
-struct planeRelativeTriangle_t {
-    std::array<planeRelativeVertex_t, 3> vertices;
-    trianglePosToPlane_t relation;
-};
-
-planeRelativeTriangle_t getTrianglePosToPlaneOfTriangle(
-    const geometry::triangle_t& curTriangle,
-    const geometry::triangle_t& planeTriangle);
-
-// Both triangles must have relation INTERSECTS.
-void canonicalizePlaneRelativeTriangles(planeRelativeTriangle_t& first,
-                                       planeRelativeTriangle_t& second);
-
 class PolyCalculator {
 public:
-    IntersectionData calculateIntersections(const std::vector<geometry::polygon_t>& polys);
+    IntersectionData calculateIntersections(const Polygons& polys);
 
 private:
-    bool GuigueDevillers(const geometry::triangle_t& first,
-                         const geometry::triangle_t& second);
+    enum class trianglePosToPlane_t { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
+
+    struct planeRelativeVertex_t {
+        geometry::point_t vertex;
+        double orient;
+    };
+
+    struct planeRelativeTriangle_t {
+        std::array<planeRelativeVertex_t, 3> vertices;
+        trianglePosToPlane_t relation;
+    };
+
+    static planeRelativeTriangle_t
+    getTrianglePosToPlaneOfTriangle(const geometry::triangle_t& curTriangle,
+                                    const geometry::triangle_t& planeTriangle);
+
+    static std::size_t
+    findIsolatedVertexIndex(const planeRelativeTriangle_t& triangle);
+
+    static void canonicalizeTriangle(planeRelativeTriangle_t& triangle,
+                                     planeRelativeTriangle_t& other);
+
+    static bool GuigueDevillers(const geometry::triangle_t& first,
+                                const geometry::triangle_t& second);
 };
 
 } // namespace triangles
