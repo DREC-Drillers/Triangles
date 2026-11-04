@@ -33,12 +33,6 @@ public:
         }
     }
 
-    PolyWorld(const PolyWorld&) = default;
-    PolyWorld(PolyWorld&&) = default;
-    PolyWorld& operator=(PolyWorld&&) = default;
-
-    PolyWorld& operator=(const PolyWorld&) = default;
-
     const std::vector<geometry::polygon_t<3>>& polys() const { return polys_; }
 };
 

@@ -138,7 +138,7 @@ TEST(Parser, ReadsAllExampleFiles) {
                           ("input_" + std::to_string(index + 1) + ".txt");
         SCOPED_TRACE(path.string());
         const auto result = triangles::Parser{}.parse(path);
-        ASSERT_EQ(result.data.size(), polygonCounts[index]);
+        ASSERT_EQ(result.data.size(), polygonCounts.at(index));
         for (std::size_t polygon = 0; polygon < result.data.size(); ++polygon) {
             const auto expected = index == 5 ? polygon + 3 : 3;
             EXPECT_EQ(result.data[polygon].size(), expected);
