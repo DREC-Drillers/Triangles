@@ -1,12 +1,11 @@
 #pragma once
 
 #include <array>
-#include <cstddef>
 #include <stdexcept>
 #include <vector>
 
-#include "scene/sceneObject.hpp"
 #include "intersectionData.hpp"
+#include "scene/sceneObject.hpp"
 
 namespace triangles {
 
@@ -15,10 +14,7 @@ struct RenderStyle {
     std::array<float, 4> intersectingPolyColor{1.0f, 0.0f, 0.0f, 1.0f};
 };
 
-template <std::size_t dimWorld>
 class RenderDataPreparer {
-    static_assert(dimWorld == 3, "Visualizer supports only 3D coordinates");
-
 public:
     std::vector<visualizer::SceneObject>
     prepare(const IntersectionData& intersections,
@@ -44,7 +40,8 @@ public:
 
 private:
     static visualizer::SceneObject
-    prepareTriangle(const geometry::polygon_t<3>& polygon, const std::array<float, 4>& color) {
+    prepareTriangle(const geometry::polygon_t<3>& polygon,
+                    const std::array<float, 4>& color) {
         const auto& points = polygon.points();
         if (points.size() != 3) {
             throw std::invalid_argument("RenderDataPreparer: expected exactly 3 vertices");

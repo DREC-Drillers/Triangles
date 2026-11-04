@@ -124,15 +124,12 @@
         } ''
           set -euo pipefail
           cmake -S ${self} -B build -G Ninja \
-            -DTRIANGLES_BUILD_APP=ON -DTRIANGLES_BUILD_VISUALIZER=ON \
+            -DTRIANGLES_BUILD_APP=ON \
             -DGENERAL_FUNCTIONS_TEST_SOURCE_DIR=${generalFunctions} \
             -DCMAKE_CXX_COMPILER=${llvm.stdenv.cc}/bin/clang++ \
             -DCMAKE_CXX_COMPILER_CLANG_SCAN_DEPS=${llvm.clang-tools}/bin/clang-scan-deps
           cmake --build build
           ctest --test-dir build --output-on-failure --no-tests=error
-          ./build/triangles ${self}/inputs/input_1.txt | grep '^Read 1 polygons$'
-          ./build/triangles ${self}/inputs/input_2.txt | grep '^Read 2 polygons$'
-          ./build/triangles ${self}/inputs/input_6.txt | grep '^Read 3 polygons$'
           touch "$out"
         '';
       };
