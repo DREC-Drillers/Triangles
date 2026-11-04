@@ -113,13 +113,9 @@ Formatting uses the complete clang-format 18 configuration from cacheResearch
 come from that project. `style-fix` requires PyYAML (included in `nix develop`),
 collects naming replacements before applying them and formats the result.
 It changes public names too: review its diff before committing.
-Both LLVM tools accept versioned (`clang-format-18`, `clang-tidy-18`) or
-unversioned executable names, but must report major version 18.
 
 Checks use tracked C/C++ files, excluding `generalFunctions`, `third_party`
 and submodules. Add new sources to Git to include them. Clang-tidy analyzes
-tracked translation units present in the compilation database and their included
-project headers, using CMake's include paths, language standard and module flags.
-Unfinished sources and headers outside the configured targets are only formatted;
-add implemented sources to CMake to enable analysis. CI checks formatting,
+translation units and included project headers; unfinished headers are only
+formatted until real translation units include them. CI checks formatting,
 clang-tidy and all three CMake presets without modifying the repository.

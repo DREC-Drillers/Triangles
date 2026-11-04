@@ -3,7 +3,6 @@
 import argparse
 import json
 import re
-import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -13,25 +12,19 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_SUFFIXES = {".c", ".cc", ".cpp", ".cxx"}
 HEADER_SUFFIXES = {".h", ".hh", ".hpp", ".hxx"}
-LLVM_MAJOR_VERSION = 18
+FORMAT_MAJOR_VERSION = 18
 
 
-def find_llvm_tool(name):
-    versions = []
-    for candidate in (f"{name}-{LLVM_MAJOR_VERSION}", name):
-        executable = shutil.which(candidate)
-        if executable is None:
-            continue
-        output = subprocess.check_output([executable, "--version"], text=True, cwd=ROOT)
-        match = re.search(r"\bversion\s+(\d+)\b", output)
-        if match and int(match.group(1)) == LLVM_MAJOR_VERSION:
-            return executable
-        versions.append(output.strip())
-    found = f" Found: {'; '.join(versions)}." if versions else ""
-    raise SystemExit(
-        f"Expected {name} {LLVM_MAJOR_VERSION}.x.{found} "
-        "Run inside `nix develop` or install the LLVM 18 tools."
+def check_format_version():
+    output = subprocess.check_output(
+        ["clang-format-18", "--version"], text=True, cwd=ROOT
     )
+    match = re.search(r"\bversion\s+(\d+\.\d+\.\d+)\b", output)
+    if match is None or int(match.group(1).split(".")[0]) != FORMAT_MAJOR_VERSION:
+        raise SystemExit(
+            f"Expected clang-format {FORMAT_MAJOR_VERSION}.x; got: {output.strip()}. "
+            "Use the project's LLVM major version before checking or applying style."
+        )
 
 
 def project_files():
@@ -47,12 +40,17 @@ def project_files():
     ]
 
 
-def tidy_command(tool, source, build_dir, options=()):
-    return [tool, str(source), "--config-file=.clang-tidy", *options,
-            "-p", str(build_dir)]
+def tidy_command(source, build_dir, compiled, options=()):
+    command = ["clang-tidy-18", str(source), "--config-file=.clang-tidy", *options]
+    if (ROOT / source).resolve() in compiled:
+        command.extend(["-p", str(build_dir)])
+    else:
+        # Standalone tools not declared in CMake still receive analysis.
+        command.extend(["--", "-std=c++17", "-I", str(ROOT)])
+    return command
 
 
-def fix_naming(tool, files, sources, build_dir):
+def fix_naming(files, build_dir, compiled):
     try:
         import yaml
     except ImportError:
@@ -67,9 +65,11 @@ def fix_naming(tool, files, sources, build_dir):
         originals[path] = path.read_bytes()
     replacements = {}
     with tempfile.TemporaryDirectory(prefix="triangles-naming-", dir=build_dir) as temporary:
-        for index, source in enumerate(sources):
+        for index, source in enumerate(files):
+            if source.suffix not in SOURCE_SUFFIXES:
+                continue
             fixes = Path(temporary) / f"{index}.yaml"
-            command = tidy_command(tool, source, build_dir, [
+            command = tidy_command(source, build_dir, compiled, [
                 "--checks=-*,readability-identifier-naming",
                 "--warnings-as-errors=-*",
                 f"--export-fixes={fixes}",
@@ -124,48 +124,34 @@ def main():
         parser.error("No tracked project C/C++ files found")
 
     if args.check.startswith("format"):
-        formatter = find_llvm_tool("clang-format")
+        check_format_version()
         flags = ["-i"] if args.check == "format-fix" else ["--dry-run", "--Werror"]
         return subprocess.call(
-            [formatter, "--style=file", *flags, *map(str, files)], cwd=ROOT
+            ["clang-format-18", "--style=file", *flags, *map(str, files)], cwd=ROOT
         )
 
     build_dir = (ROOT / args.build_dir).resolve()
-    try:
-        with (build_dir / "compile_commands.json").open(encoding="utf-8") as stream:
-            database = json.load(stream)
-    except (OSError, ValueError) as error:
-        parser.error(
-            f"Cannot read {build_dir / 'compile_commands.json'}: {error}. "
-            "Run `cmake --preset quality` and `cmake --build --preset quality` first."
-        )
+    with (build_dir / "compile_commands.json").open(encoding="utf-8") as stream:
+        database = json.load(stream)
     compiled = {
         (Path(entry["directory"]) / entry["file"]).resolve() for entry in database
     }
-    # Only CMake knows the correct include paths, language standard and module flags.
-    sources = [source for source in files if source.suffix in SOURCE_SUFFIXES
-               and (ROOT / source).resolve() in compiled]
-    for source in files:
-        if source.suffix in SOURCE_SUFFIXES and source not in sources:
-            print(f"Skipping {source}: not in the compilation database; "
-                  "add it to a CMake target to enable analysis.", flush=True)
-    if not sources:
-        parser.error("Compilation database contains no tracked project C/C++ sources")
-    tidy = find_llvm_tool("clang-tidy")
     options = []
     if args.check == "style-fix":
-        formatter = find_llvm_tool("clang-format")
-        if fix_naming(tidy, files, sources, build_dir) != 0:
+        check_format_version()
+        if fix_naming(files, build_dir, compiled) != 0:
             return 1
         if subprocess.call(
-            [formatter, "--style=file", "-i", *map(str, files)], cwd=ROOT
+            ["clang-format-18", "--style=file", "-i", *map(str, files)], cwd=ROOT
         ) != 0:
             return 1
         options = ["--checks=-*,readability-identifier-naming"]
 
     failed = False
-    for source in sources:
-        command = tidy_command(tidy, source, build_dir, options)
+    for source in files:
+        if source.suffix not in SOURCE_SUFFIXES or (ROOT / source).resolve() not in compiled:
+            continue
+        command = tidy_command(source, build_dir, compiled, options)
         print(f"Analyzing {source}", flush=True)
         failed |= subprocess.call(command, cwd=ROOT) != 0
     return int(failed)
