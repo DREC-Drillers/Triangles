@@ -1,57 +1,58 @@
-
 #include "polyCalculator.hpp"
 
 #include <algorithm>
-#include <cassert>
+#include <array>
+#include <cstddef>
 #include <cmath>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace triangles {
 
-using geometry::point_t;
-using geometry::triangle_t;
-using geometry::vector_t;
-
 namespace {
 
-constexpr double orientationEpsilon = 1e-9;
+using geometry::point_t;
+using geometry::triangle_t;
+
+enum class trianglePosToPlane_t { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
+
+struct planeRelativeVertex_t {
+    geometry::point_t<3> vertex;
+    double orient;
+};
+
+struct planeRelativeTriangle_t {
+    std::array<planeRelativeVertex_t, 3> vertices;
+    trianglePosToPlane_t relation;
+};
+
+constexpr double ORIENTATION_EPSILON = 1e-9;
 
 int orientationSign(double orientation) {
-    if (orientation > orientationEpsilon)
+    if (orientation > ORIENTATION_EPSILON)
         return 1;
-    if (orientation < -orientationEpsilon)
+    if (orientation < -ORIENTATION_EPSILON)
         return -1;
     return 0;
 }
 
-struct Point2D {
-    double x;
-    double y;
-};
+bool triangleHasEdgeSeparatingFromOther(
+    const std::array<point_t<2>, 3>& curTriangle,
+    const std::array<point_t<2>, 3>& otherTriangle) {
 
-Point2D projectPoint(const point_t& point, std::size_t droppedAxis) {
-    if (droppedAxis == 0)
-        return {point.y(), point.z()};
-    if (droppedAxis == 1)
-        return {point.x(), point.z()};
-    return {point.x(), point.y()};
-}
+    for (std::size_t edgeNum = 0; edgeNum < 3; ++edgeNum) {
+        const auto& firstEdgeVert = curTriangle[edgeNum];              // TODO
+        const auto& secondEdgeVert = curTriangle[(edgeNum + 1) % 3];  // segment edge??
+        const auto& freeVert = curTriangle[(edgeNum + 2) % 3];
 
-double orient2D(const Point2D& a, const Point2D& b, const Point2D& c) {
-    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-}
-
-bool hasSeparatingEdge(const std::array<Point2D, 3>& first,
-                       const std::array<Point2D, 3>& second) {
-    for (std::size_t i = 0; i < 3; ++i) {
-        const auto& a = first[i];
-        const auto& b = first[(i + 1) % 3];
-        const int interior = orientationSign(orient2D(a, b, first[(i + 2) % 3]));
+        const int insideSign = orientationSign(
+            point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, freeVert));
+        // TODO pointToSegmentOrientFunc
         bool allOutside = true;
-        for (const auto& point : second) {
-            if (orientationSign(orient2D(a, b, point)) != -interior ||
-                interior == 0) {
+        for (const auto& point : otherTriangle) {
+            if (orientationSign(point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, point)) != -insideSign ||
+                insideSign == 0) {
                 allOutside = false;
                 break;
             }
@@ -59,33 +60,35 @@ bool hasSeparatingEdge(const std::array<Point2D, 3>& first,
         if (allOutside)
             return true;
     }
+
     return false;
 }
 
-bool isTrianglesIntersect2D(const triangle_t& first, const triangle_t& second) {
-    const auto normal =
-        vector_t(first.a(), first.b()).cross(vector_t(first.a(), first.c()));
-    const std::array<double, 3> components{
+bool areTrianglesIntersectOnPlane(const triangle_t& first, const triangle_t& second) {
+    const auto normal = first.unitNormal();
+
+    const std::array<double, 3> normalComponents{
         std::abs(normal.x()), std::abs(normal.y()), std::abs(normal.z())};
     const std::size_t droppedAxis =
-        std::max_element(components.begin(), components.end()) - components.begin();
-    const std::array<Point2D, 3> projectedFirst{
-        projectPoint(first.a(), droppedAxis),
-        projectPoint(first.b(), droppedAxis),
-        projectPoint(first.c(), droppedAxis)};
-    const std::array<Point2D, 3> projectedSecond{
-        projectPoint(second.a(), droppedAxis),
-        projectPoint(second.b(), droppedAxis),
-        projectPoint(second.c(), droppedAxis)};
-    return !hasSeparatingEdge(projectedFirst, projectedSecond) &&
-           !hasSeparatingEdge(projectedSecond, projectedFirst);
+        std::max_element(normalComponents.begin(), normalComponents.end()) -
+        normalComponents.begin();
+
+    const std::array<point_t<2>, 3> projectedFirst{
+        first.a().project(droppedAxis),
+        first.b().project(droppedAxis),
+        first.c().project(droppedAxis)};
+
+    const std::array<point_t<2>, 3> projectedSecond{
+        second.a().project(droppedAxis),
+        second.b().project(droppedAxis),
+        second.c().project(droppedAxis)};
+
+    return !triangleHasEdgeSeparatingFromOther(projectedFirst, projectedSecond) &&
+           !triangleHasEdgeSeparatingFromOther(projectedSecond, projectedFirst);
 }
 
-} // namespace
-
 std::size_t
-PolyCalculator::findIsolatedVertexIndex(const planeRelativeTriangle_t& curTriangle) {
-
+findIsolatedVertexIndex(const planeRelativeTriangle_t& curTriangle) {
     const int aVertOrientToNorm = -orientationSign(curTriangle.vertices[0].orient);
     const int bVertOrientToNorm = -orientationSign(curTriangle.vertices[1].orient);
     const int cVertOrientToNorm = -orientationSign(curTriangle.vertices[2].orient);
@@ -106,9 +109,8 @@ PolyCalculator::findIsolatedVertexIndex(const planeRelativeTriangle_t& curTriang
     return isolatedVertIdx;
 }
 
-void PolyCalculator::canonicalizeTriangle(planeRelativeTriangle_t& curTriangle,
-                                          planeRelativeTriangle_t& planeTriangle) {
-
+void canonicalizeTriangle(planeRelativeTriangle_t& curTriangle,
+                          planeRelativeTriangle_t& planeTriangle) {
     const std::size_t isolatedVertIdx = findIsolatedVertexIndex(curTriangle);
 
     std::rotate(curTriangle.vertices.begin(),
@@ -126,70 +128,14 @@ void PolyCalculator::canonicalizeTriangle(planeRelativeTriangle_t& curTriangle,
     }
 }
 
-IntersectionData PolyCalculator::calculateIntersections(const Polygons& polys) {
-    IntersectionData intersections;
-
-    for (std::size_t first = 0; first < polys.size(); ++first) {
-        const auto& polygon = polys[first];
-        if (!polygon) {
-            throw std::invalid_argument("Polygon must not be null");
-        }
-        if (polygon.get_deleter().kind != PolygonKind::Triangle) {
-            throw std::invalid_argument("Only triangles are supported; other "
-                                        "polygons are not supported yet");
-        }
-        const auto& triangle = static_cast<const triangle_t&>(*polygon);
-
-        for (std::size_t second = 0; second < first; ++second) {
-            const auto& other = static_cast<const triangle_t&>(*polys[second]);
-            if (GuigueDevillers(triangle, other)) {
-                intersections.emplace_back(second, first);
-            }
-        }
-    }
-
-    return intersections;
-}
-
-bool PolyCalculator::GuigueDevillers(const triangle_t& first,
-                                     const triangle_t& second) {
-
-    auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
-    if (firstPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
-        return false;
-    }
-    if (firstPos.relation == trianglePosToPlane_t::BELONGS) {
-        return isTrianglesIntersect2D(first, second);
-    }
-
-    auto secondPos = getTrianglePosToPlaneOfTriangle(second, first);
-    if (secondPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
-        return false;
-    }
-
-    canonicalizeTriangle(firstPos, secondPos);
-    canonicalizeTriangle(secondPos, firstPos);
-
-    const auto& p1 = firstPos.vertices[0].vertex;
-    const auto& q1 = firstPos.vertices[1].vertex;
-    const auto& r1 = firstPos.vertices[2].vertex;
-
-    const auto& p2 = secondPos.vertices[0].vertex;
-    const auto& q2 = secondPos.vertices[1].vertex;
-    const auto& r2 = secondPos.vertices[2].vertex;
-
-    return orientationSign(point_t::orient3D(q1, p2, p1, q2)) >= 0 &&
-           orientationSign(point_t::orient3D(p1, p2, r1, r2)) >= 0;
-}
-
-PolyCalculator::planeRelativeTriangle_t
-PolyCalculator::getTrianglePosToPlaneOfTriangle(const triangle_t& curTriangle,
-                                                const triangle_t& planeTriangle) {
-    const double firstVertexOrient = point_t::orient3D(
+planeRelativeTriangle_t
+getTrianglePosToPlaneOfTriangle(const triangle_t& curTriangle,
+                              const triangle_t& planeTriangle) {
+    const double firstVertexOrient = point_t<3>::orient3D(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.a());
-    const double secondVertexOrient = point_t::orient3D(
+    const double secondVertexOrient = point_t<3>::orient3D(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.b());
-    const double thirdVertexOrient = point_t::orient3D(
+    const double thirdVertexOrient = point_t<3>::orient3D(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.c());
 
     planeRelativeTriangle_t result{{{{curTriangle.a(), firstVertexOrient},
@@ -218,6 +164,74 @@ PolyCalculator::getTrianglePosToPlaneOfTriangle(const triangle_t& curTriangle,
         result.relation = trianglePosToPlane_t::INTERSECTS;
     }
     return result;
+}
+
+bool doTrianglesIntersect(const triangle_t& first, const triangle_t& second) {
+    auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
+    if (firstPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
+        return false;
+    }
+    if (firstPos.relation == trianglePosToPlane_t::BELONGS) {
+        return areTrianglesIntersectOnPlane(first, second);
+    }
+
+    auto secondPos = getTrianglePosToPlaneOfTriangle(second, first);
+    if (secondPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
+        return false;
+    }
+
+    canonicalizeTriangle(firstPos, secondPos);
+    canonicalizeTriangle(secondPos, firstPos);
+
+    const auto& p1 = firstPos.vertices[0].vertex;
+    const auto& q1 = firstPos.vertices[1].vertex;
+    const auto& r1 = firstPos.vertices[2].vertex;
+
+    const auto& p2 = secondPos.vertices[0].vertex;
+    const auto& q2 = secondPos.vertices[1].vertex;
+    const auto& r2 = secondPos.vertices[2].vertex;
+
+    return orientationSign(point_t<3>::orient3D(q1, p2, p1, q2)) >= 0 &&
+           orientationSign(point_t<3>::orient3D(p1, p2, r1, r2)) >= 0;
+}
+
+} // namespace
+
+IntersectionData PolyCalculator::calculateIntersections(const PolyWorld<3>& world) {
+    IntersectionData intersections{world, {}, {}};
+
+    const auto& polys = world.polys();
+    std::vector<triangle_t> triangles;
+    triangles.reserve(polys.size());
+
+    for (const auto& polygon : polys) {
+        if (polygon.numOfPoints() != 3) {
+            throw std::invalid_argument("Only triangles are supported; other "
+                                        "polygons are not supported yet");
+        }
+        triangles.emplace_back(polygon.point(0), polygon.point(1), polygon.point(2));
+    }
+
+    std::vector<bool> intersects(triangles.size(), false);
+    for (std::size_t first = 0; first < triangles.size(); ++first) {
+        const auto& triangle = triangles[first];
+
+        for (std::size_t second = 0; second < first; ++second) {
+            const auto& other = triangles[second];
+            if (doTrianglesIntersect(triangle, other)) {
+                intersects[first] = true;
+                intersects[second] = true;
+            }
+        }
+    }
+
+    for (std::size_t i = 0; i < polys.size(); ++i) {
+        auto& collection = intersects[i] ? intersections.intersectingPolys
+                                        : intersections.nonIntersectingPolys;
+        collection.push_back(&polys[i]);
+    }
+
+    return intersections;
 }
 
 } // namespace triangles

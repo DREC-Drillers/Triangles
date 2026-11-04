@@ -1,14 +1,15 @@
 #pragma once
 
-#include <cstddef>
-#include <utility>
 #include <vector>
+
+#include "polyWorld.hpp"
 
 namespace triangles {
 
-// Indices into the input Polygons collection; no geometry is copied or owned.
-using IntersectingPair = std::pair<std::size_t, std::size_t>;
-
-using IntersectionData = std::vector<IntersectingPair>;
+struct IntersectionData {
+    const PolyWorld<3>& world;
+    std::vector<const geometry::polygon_t*> intersectingPolys;
+    std::vector<const geometry::polygon_t*> nonIntersectingPolys;
+};
 
 } // namespace triangles
