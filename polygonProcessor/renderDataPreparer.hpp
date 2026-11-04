@@ -23,15 +23,17 @@ public:
         objects.reserve(intersections.nonIntersectingPolys.size() +
                         intersections.intersectingPolys.size());
 
-        const auto append = [&](const std::vector<const geometry::polygon_t<3>*>& polygons,
-                                const std::array<float, 4>& color) {
-            for (const auto* polygon : polygons) {
-                if (polygon == nullptr) {
-                    throw std::invalid_argument("RenderDataPreparer: null polygon");
+        const auto append =
+            [&](const std::vector<const geometry::polygon_t<3>*>& polygons,
+                const std::array<float, 4>& color) {
+                for (const auto* polygon : polygons) {
+                    if (polygon == nullptr) {
+                        throw std::invalid_argument(
+                            "RenderDataPreparer: null polygon");
+                    }
+                    objects.push_back(prepareTriangle(*polygon, color));
                 }
-                objects.push_back(prepareTriangle(*polygon, color));
-            }
-        };
+            };
 
         append(intersections.nonIntersectingPolys, style.polyColor);
         append(intersections.intersectingPolys, style.intersectingPolyColor);
@@ -44,7 +46,8 @@ private:
                     const std::array<float, 4>& color) {
         const auto& points = polygon.points();
         if (points.size() != 3) {
-            throw std::invalid_argument("RenderDataPreparer: expected exactly 3 vertices");
+            throw std::invalid_argument(
+                "RenderDataPreparer: expected exactly 3 vertices");
         }
 
         visualizer::SceneObject object;
@@ -54,17 +57,15 @@ private:
         object.geometry.vertices.reserve(3);
 
         const auto n = polygon.unitNormal();
-        const std::array<float, 3> normal{
-            static_cast<float>(n.x()),
-            static_cast<float>(n.y()),
-            static_cast<float>(n.z())};
+        const std::array<float, 3> normal{static_cast<float>(n.x()),
+                                          static_cast<float>(n.y()),
+                                          static_cast<float>(n.z())};
 
         for (const auto& point : points) {
-            object.geometry.vertices.push_back({
-                {static_cast<float>(point.x()),
-                 static_cast<float>(point.y()),
-                 static_cast<float>(point.z())},
-                normal});
+            object.geometry.vertices.push_back({{static_cast<float>(point.x()),
+                                                 static_cast<float>(point.y()),
+                                                 static_cast<float>(point.z())},
+                                                normal});
         }
         return object;
     }

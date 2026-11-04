@@ -4,12 +4,12 @@
 #include <memory>
 #include <utility>
 
-#include "parser/parser.hpp"
-#include "polygonProcessor/polyCalculator.hpp"
-#include "polygonProcessor/renderDataPreparer.hpp"
 #include "cameraController/orbitCameraController.hpp"
 #include "core/backendFactory.hpp"
 #include "core/visualizer.hpp"
+#include "parser/parser.hpp"
+#include "polygonProcessor/polyCalculator.hpp"
+#include "polygonProcessor/renderDataPreparer.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -20,7 +20,8 @@ int main(int argc, char* argv[]) {
     try {
         const auto input = triangles::Parser{}.parse(std::filesystem::path{argv[1]});
         const triangles::PolyWorld<3> world(input);
-        const auto result = triangles::PolyCalculator{}.calculateIntersections(world);
+        const auto result =
+            triangles::PolyCalculator{}.calculateIntersections(world);
         std::cout << "Triangles: " << world.polys().size()
                   << "\nIntersecting: " << result.intersectingPolys.size()
                   << "\nNon-intersecting: " << result.nonIntersectingPolys.size()
@@ -38,7 +39,9 @@ int main(int argc, char* argv[]) {
 
         visualizer::Viewer viewer(
             visualizer::BackendFactory::create(visualizer::BackendSettings{}));
-        viewer.addView(scene, cameraId, {},
+        viewer.addView(scene,
+                       cameraId,
+                       {},
                        std::make_unique<visualizer::OrbitCameraController>());
         viewer.run();
     } catch (const std::exception& error) {
