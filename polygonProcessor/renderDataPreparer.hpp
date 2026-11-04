@@ -6,7 +6,8 @@
 
 #include "../render/renderData.hpp"
 #include "intersectionData.hpp"
-#include "polygons.hpp"
+
+import geometry;
 
 namespace triangles {
 
@@ -17,14 +18,15 @@ struct RenderStyle {
 };
 
 // Adapts domain geometry to the renderer's fixed 3D format.
-template <std::size_t DimWorld, std::size_t DimPoly>
+template <std::size_t dimWorld>
 class RenderDataPreparer {
 public:
     // objects: triangulated polygons with normals; intersecting polygons are red.
-    // highlights: Point -> Points, Segment -> Lines, Polygon -> Triangles.
-    // Also emit every intersection vertex as Points in intersectionColor.
+    // highlights: POINT -> POINTS, SEGMENT -> LINES, POLYGON -> TRIANGLES.
+    // Also emit every intersection vertex as POINTS in intersectionColor.
     // Polygon intersections require triangulation, not just copying their vertices.
-    RenderData prepare(const Polygons& polys, const IntersectionData& intersections,
+    RenderData prepare(const std::vector<geometry::polygon_t<3>>& polys,
+                       const IntersectionData& intersections,
                        const RenderStyle& style) const;
 };
 

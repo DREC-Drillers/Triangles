@@ -2,33 +2,32 @@
 
 #include <cstddef>
 
-#include "../render/renderer.hpp"
-#include "initPolysData.hpp"
 #include "intersectionData.hpp"
+#include "polyCalculator.hpp"
 #include "polyWorld.hpp"
-#include "renderDataPreparer.hpp"
 
 namespace triangles {
 
-template <std::size_t DimWorld, std::size_t DimPoly>
+template <std::size_t dimWorld>
 class PolyProcessor {
 private:
-    PolyWorld<DimWorld, DimPoly> world_;
-    Renderer renderer_;
-    RenderStyle renderStyle_;
+    const PolyWorld<dimWorld>& world_;
 
 public:
-    PolyProcessor(const InitPolysData& initData);
+    explicit PolyProcessor(const PolyWorld<dimWorld>& world) : world_(world) {}
+    PolyProcessor(PolyWorld<dimWorld>&&) = delete;
+    PolyProcessor(const PolyWorld<dimWorld>&&) = delete;
 
-    const IntersectionData& calculateIntersections() {
-        return world_.calculateIntersections();
+    const PolyWorld<dimWorld>& world() const { return world_; }
+
+    IntersectionData calculateIntersections() const {
+        PolyCalculator calculator;
+        return calculateIntersections(calculator);
     }
 
-    void drawPolys() {
-        RenderDataPreparer<DimWorld, DimPoly> preparer;
-        RenderData data = preparer.prepare(
-            world_.polys(), world_.intersectionData(), renderStyle_);
-        renderer_.draw(data);
+    template <typename Calculator>
+    IntersectionData calculateIntersections(Calculator& calculator) const {
+        return calculator.calculateIntersections(world_.polys());
     }
 };
 

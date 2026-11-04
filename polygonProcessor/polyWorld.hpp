@@ -1,43 +1,45 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 #include "initPolysData.hpp"
-#include "intersectionData.hpp"
-#include "polyCalculator.hpp"
-#include "polygons.hpp"
+
+import geometry;
 
 namespace triangles {
 
-template <std::size_t DimWorld, std::size_t DimPoly>
+template <std::size_t dimWorld>
 class PolyWorld {
+    static_assert(dimWorld == 3,
+                  "InitPolysData currently supports only 3D coordinates");
+
 private:
-    Polygons polys_;
-    IntersectionData intersectionData_;
+    std::vector<geometry::polygon_t<3>> polys_;
 
 public:
     explicit PolyWorld(const InitPolysData& initData) {
         polys_.reserve(initData.data.size());
-        for (const auto& polygon : initData.data) {
-            std::vector<geometry::point_t> points;
-            points.reserve(polygon.size());
-            for (const auto& point : polygon) {
-                points.emplace_back(point.x(), point.y(), point.z());
+        for (const auto& vertices : initData.data) {
+            std::vector<geometry::point_t<3>> points;
+            points.reserve(vertices.size());
+            for (const auto& vertex : vertices) {
+                points.emplace_back(
+                    std::array<double, 3>{vertex.x(), vertex.y(), vertex.z()});
             }
-            polys_.push_back(makePolygon(std::move(points)));
+            polys_.emplace_back(std::move(points));
         }
     }
 
-    const IntersectionData& calculateIntersections() {
-        PolyCalculator calculator;
-        intersectionData_ = calculator.calculateIntersections(polys_);
-        return intersectionData_;
-    }
+    PolyWorld(const PolyWorld&) = default;
+    PolyWorld(PolyWorld&&) = default;
+    PolyWorld& operator=(PolyWorld&&) = default;
 
-    const Polygons& polys() const { return polys_; }
+    PolyWorld& operator=(const PolyWorld&) = default;
 
-    const IntersectionData& intersectionData() const { return intersectionData_; }
+    const std::vector<geometry::polygon_t<3>>& polys() const { return polys_; }
 };
 
 } // namespace triangles

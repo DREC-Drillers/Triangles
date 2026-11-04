@@ -9,13 +9,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    visualizer = {
+      url = "github:DREC-Drillers/3D-Visualizer/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixGL.follows = "nixGL";
+    };
+
     generalFunctions = {
-      url = "github:DREC-Drillers/generalFunctions/main";
+      url = "git+https://github.com/DREC-Drillers/generalFunctions.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, nixGL, generalFunctions, ... }:
+  outputs = { self, nixpkgs, nixGL, generalFunctions, visualizer, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
@@ -25,6 +31,8 @@
       generalFunctionsPackage = generalFunctions.packages.${system}.default.override {
         buildFiles = true;
       };
+
+      visualizerPackage = visualizer.packages.${system}.default;
 
       mkShell = pkgs.mkShell.override {
         stdenv = llvm.stdenv;
@@ -70,6 +78,7 @@
         buildInputs = [
           pkgs.glfw
           pkgs.glm
+          visualizerPackage
           generalFunctionsPackage
           pkgs.gtest
         ];
@@ -111,18 +120,19 @@
 
         application = pkgs.runCommand "triangles-application" {
           nativeBuildInputs = [ pkgs.cmake pkgs.ninja llvm.stdenv.cc llvm.clang-tools ];
-          buildInputs = [ generalFunctionsPackage pkgs.gtest ];
+          buildInputs = [ generalFunctionsPackage pkgs.gtest visualizerPackage ];
         } ''
           set -euo pipefail
           cmake -S ${self} -B build -G Ninja \
-            -DTRIANGLES_BUILD_APP=ON \
+            -DTRIANGLES_BUILD_APP=ON -DTRIANGLES_BUILD_VISUALIZER=ON \
             -DGENERAL_FUNCTIONS_TEST_SOURCE_DIR=${generalFunctions} \
             -DCMAKE_CXX_COMPILER=${llvm.stdenv.cc}/bin/clang++ \
             -DCMAKE_CXX_COMPILER_CLANG_SCAN_DEPS=${llvm.clang-tools}/bin/clang-scan-deps
           cmake --build build
           ctest --test-dir build --output-on-failure --no-tests=error
-          ./build/triangles ${self}/inputs/input_1.txt | grep '^Read 1 triangles$'
-          ./build/triangles ${self}/inputs/input_2.txt | grep '^Read 2 triangles$'
+          ./build/triangles ${self}/inputs/input_1.txt | grep '^Read 1 polygons$'
+          ./build/triangles ${self}/inputs/input_2.txt | grep '^Read 2 polygons$'
+          ./build/triangles ${self}/inputs/input_6.txt | grep '^Read 3 polygons$'
           touch "$out"
         '';
       };

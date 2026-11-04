@@ -7,6 +7,8 @@ endif()
 project(Triangles VERSION 0.1.0 LANGUAGES CXX)
 
 option(TRIANGLES_BUILD_APP "Build the triangle input parser" OFF)
+option(TRIANGLES_BUILD_VISUALIZER "Link the installed Visualizer package to the app" OFF)
+
 include(CTest)
 
 function(triangles_configure_target target)
@@ -58,6 +60,11 @@ if(TRIANGLES_BUILD_APP)
         GeneralFunctions::lexer
         GeneralFunctions::files
         GeneralFunctions::geometry)
+
+    if(TRIANGLES_BUILD_VISUALIZER)
+        find_package(Visualizer 0.1 CONFIG REQUIRED)
+        target_link_libraries(triangles PRIVATE Visualizer::visualizer)
+    endif()
 
     set_property(TARGET triangles PROPERTY CXX_SCAN_FOR_MODULES ON)
 
@@ -133,13 +140,16 @@ if(BUILD_TESTING)
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/polygonProcessor")
     target_link_libraries(parser_tests PRIVATE
-        GeneralFunctions::lexer GeneralFunctions::files GTest::gtest_main)
+        GeneralFunctions::lexer GeneralFunctions::files
+        GeneralFunctions::geometry GTest::gtest_main)
+    set_property(TARGET parser_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     target_compile_definitions(parser_tests PRIVATE
         TRIANGLES_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
     add_executable(poly_calculator_tests tests/poly_calculator_test.cpp)
+    target_include_directories(poly_calculator_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(poly_calculator_tests PRIVATE triangles_geometry GTest::gtest_main)
     set_property(TARGET poly_calculator_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     triangles_configure_target(poly_calculator_tests)

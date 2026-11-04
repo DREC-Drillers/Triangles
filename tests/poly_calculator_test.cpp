@@ -137,7 +137,7 @@ TEST(PolyCalculator, HandlesTrianglesOnParallelPlanes) {
 }
 
 
-using TriangleVertices = std::array<triangles::Point, 3>;
+using TriangleVertices = std::array<triangles::InitPolysData::Point, 3>;
 
 struct TrianglePairCase {
     const char* name;
@@ -156,9 +156,9 @@ TEST_P(TrianglePairIntersection, IsIndependentOfVertexOrderPairOrderAndProjectio
     const auto& testCase = GetParam();
     // Cyclic coordinate permutations exercise projections onto XY, YZ and XZ.
     for (std::size_t axisRotation = 0; axisRotation < 3; ++axisRotation) {
-        auto transform = [axisRotation](const triangles::Point& point) {
+        auto transform = [axisRotation](const triangles::InitPolysData::Point& point) {
             const std::array<double, 3> coordinates{point.x(), point.y(), point.z()};
-            return triangles::Point(coordinates.at(axisRotation),
+            return triangles::InitPolysData::Point(coordinates.at(axisRotation),
                                     coordinates.at((axisRotation + 1) % 3),
                                     coordinates.at((axisRotation + 2) % 3));
         };
