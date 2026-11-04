@@ -3,6 +3,8 @@ InheritParentConfig: false
 Checks: >-
   -*,
   clang-analyzer-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
   bugprone-assert-side-effect,
   bugprone-assignment-in-if-condition,
   bugprone-bool-pointer-implicit-conversion,
@@ -35,7 +37,7 @@ Checks: >-
 # Optional residency and exception propagation need a separate contract review;
 # do not enable every bugprone check indiscriminately.
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(^|[/\\])(polygonProcessor|render|tests)[/\\].*\.(h|hh|hpp|hxx)$'
+HeaderFilterRegex: '(^|[/\\])(parser|polygonProcessor|render|tests)[/\\].*\.(h|hh|hpp|hxx)$'
 SystemHeaders: false
 FormatStyle: file
 CheckOptions:

@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <array>
 #include <ostream>
 #include <string>
@@ -8,7 +7,6 @@
 #include <gtest/gtest.h>
 
 #include "polygonProcessor/polyCalculator.hpp"
-#include "polygonProcessor/renderDataPreparer.hpp"
 
 namespace {
 
@@ -148,8 +146,8 @@ struct TrianglePairCase {
     bool intersects;
 };
 
-void PrintTo(const TrianglePairCase& testCase, std::ostream* output) {
-    *output << testCase.name;
+std::ostream& operator<<(std::ostream& output, const TrianglePairCase& testCase) {
+    return output << testCase.name;
 }
 
 class TrianglePairIntersection : public testing::TestWithParam<TrianglePairCase> {};
@@ -160,14 +158,15 @@ TEST_P(TrianglePairIntersection, IsIndependentOfVertexOrderPairOrderAndProjectio
     for (std::size_t axisRotation = 0; axisRotation < 3; ++axisRotation) {
         auto transform = [axisRotation](const triangles::Point& point) {
             const std::array<double, 3> coordinates{point.x(), point.y(), point.z()};
-            return triangles::Point(coordinates[axisRotation],
-                                    coordinates[(axisRotation + 1) % 3],
-                                    coordinates[(axisRotation + 2) % 3]);
+            return triangles::Point(coordinates.at(axisRotation),
+                                    coordinates.at((axisRotation + 1) % 3),
+                                    coordinates.at((axisRotation + 2) % 3));
         };
-        std::array<std::size_t, 3> firstOrder{0, 1, 2};
-        do {
-            std::array<std::size_t, 3> secondOrder{0, 1, 2};
-            do {
+        constexpr std::array<std::array<std::size_t, 3>, 6> VERTEX_ORDERS{{
+            {0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+            {1, 2, 0}, {2, 0, 1}, {2, 1, 0}}};
+        for (const auto& firstOrder : VERTEX_ORDERS) {
+            for (const auto& secondOrder : VERTEX_ORDERS) {
                 for (bool swapPair : {false, true}) {
                     SCOPED_TRACE(testing::Message()
                                  << "rotation=" << axisRotation << " swap=" << swapPair
@@ -177,9 +176,9 @@ TEST_P(TrianglePairIntersection, IsIndependentOfVertexOrderPairOrderAndProjectio
                     input.data.resize(2);
                     for (std::size_t vertex = 0; vertex < 3; ++vertex) {
                         input.data[swapPair ? 1 : 0].push_back(
-                            transform(testCase.first[firstOrder[vertex]]));
+                            transform(testCase.first.at(firstOrder.at(vertex))));
                         input.data[swapPair ? 0 : 1].push_back(
-                            transform(testCase.second[secondOrder[vertex]]));
+                            transform(testCase.second.at(secondOrder.at(vertex))));
                     }
                     const PolyWorld<3> world(input);
                     const auto result = PolyCalculator{}.calculateIntersections(world);
@@ -190,10 +189,13 @@ TEST_P(TrianglePairIntersection, IsIndependentOfVertexOrderPairOrderAndProjectio
                     EXPECT_EQ(result.intersectingPolys, testCase.intersects ? both : none);
                     EXPECT_EQ(result.nonIntersectingPolys, testCase.intersects ? none : both);
                 }
-            } while (std::next_permutation(secondOrder.begin(), secondOrder.end()));
-        } while (std::next_permutation(firstOrder.begin(), firstOrder.end()));
+            }
+        }
     }
 }
+
+constexpr double CONTAINED_VERTEX_OFFSET = 0.5;
+constexpr double SEPARATED_VERTEX_X = 4.0001;
 
 const TriangleVertices baseTriangle{{{0, 0, 0}, {4, 0, 0}, {0, 4, 0}}};
 
@@ -202,7 +204,9 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(
         TrianglePairCase{"Identical", baseTriangle, baseTriangle, true},
         TrianglePairCase{"CoplanarContainment", baseTriangle,
-                         {{{0.5, 0.5, 0}, {1, 0.5, 0}, {0.5, 1, 0}}}, true},
+                         {{{CONTAINED_VERTEX_OFFSET, CONTAINED_VERTEX_OFFSET, 0},
+                           {1, CONTAINED_VERTEX_OFFSET, 0},
+                           {CONTAINED_VERTEX_OFFSET, 1, 0}}}, true},
         TrianglePairCase{"CoplanarCrossingEdges", baseTriangle,
                          {{{3, 3, 0}, {-1, 3, 0}, {3, -1, 0}}}, true},
         TrianglePairCase{"CoplanarVertexContact", baseTriangle,
@@ -214,7 +218,7 @@ INSTANTIATE_TEST_SUITE_P(
         TrianglePairCase{"CoplanarSeparatedWithOverlappingBounds", baseTriangle,
                          {{{3, 3, 0}, {5, 3, 0}, {3, 5, 0}}}, false},
         TrianglePairCase{"CoplanarSmallGap", baseTriangle,
-                         {{{4.0001, 0, 0}, {5, 0, 0}, {4.0001, 1, 0}}}, false},
+                         {{{SEPARATED_VERTEX_X, 0, 0}, {5, 0, 0}, {SEPARATED_VERTEX_X, 1, 0}}}, false},
         TrianglePairCase{"ParallelPlanes", baseTriangle,
                          {{{0, 0, 1}, {4, 0, 1}, {0, 4, 1}}}, false},
         TrianglePairCase{"SpatialCrossing", baseTriangle,
