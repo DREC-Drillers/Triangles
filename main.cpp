@@ -2,11 +2,17 @@
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <span>
 #include <utility>
 
 #include "cameraController/orbitCameraController.hpp"
+#if __has_include("core/backendFactory.hpp")
 #include "core/backendFactory.hpp"
 #include "core/visualizer.hpp"
+#else
+#include "backendFactory.hpp"
+#include "visualizer.hpp"
+#endif
 #include "parser/parser.hpp"
 #include "polygonProcessor/polyCalculator.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
@@ -18,7 +24,9 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        const auto input = triangles::Parser{}.parse(std::filesystem::path{argv[1]});
+        const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
+        const auto input =
+            triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
         const triangles::PolyWorld<3> world(input);
         const auto result =
             triangles::PolyCalculator{}.calculateIntersections(world);
@@ -34,7 +42,8 @@ int main(int argc, char* argv[]) {
         }
 
         visualizer::Camera camera;
-        camera.setPosition({0, 0, 40});
+        constexpr float CAMERA_DISTANCE = 40;
+        camera.setPosition({0, 0, CAMERA_DISTANCE});
         const auto cameraId = scene.addCamera(std::move(camera));
 
         visualizer::Viewer viewer(

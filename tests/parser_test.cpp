@@ -131,24 +131,22 @@ TEST(Parser, ReportsMissingCoordinateInSecondPolygon) {
     }
 }
 
-TEST(Parser, ReadsAllExampleFiles) {
-    const std::array<std::size_t, 6> polygonCounts{1, 2, 2, 2, 2, 3};
-    for (std::size_t index = 0; index < polygonCounts.size(); ++index) {
-        const auto path = std::filesystem::path(TRIANGLES_SOURCE_DIR) / "inputs" /
-                          ("input_" + std::to_string(index + 1) + ".txt");
-        SCOPED_TRACE(path.string());
-        const auto result = triangles::Parser{}.parse(path);
-        ASSERT_EQ(result.data.size(), polygonCounts.at(index));
-        for (std::size_t polygon = 0; polygon < result.data.size(); ++polygon) {
-            const auto expected = index == 5 ? polygon + 3 : 3;
-            EXPECT_EQ(result.data[polygon].size(), expected);
-        }
+TEST(Parser, ReadsMixedPolygonsFromFile) {
+    const auto result = triangles::Parser{}.parse(
+        std::filesystem::path(TRIANGLES_TEST_DATA_DIR) / "mixed_polygons.txt");
+    ASSERT_EQ(result.data.size(), 3U);
+    const std::array<std::size_t, 3> vertexCounts{3, 4, 5};
+    for (std::size_t polygon = 0; polygon < vertexCounts.size(); ++polygon) {
+        EXPECT_EQ(result.data[polygon].size(), vertexCounts.at(polygon));
     }
+    EXPECT_DOUBLE_EQ(result.data[2][4].x(), -1);
+    EXPECT_DOUBLE_EQ(result.data[2][4].y(), 1);
+    EXPECT_DOUBLE_EQ(result.data[2][4].z(), 2);
 }
 
 TEST(Parser, ReadsSceneCoordinatesFromFile) {
     const auto result = triangles::Parser{}.parse(
-        std::filesystem::path(TRIANGLES_SOURCE_DIR) / "inputs/input_1.txt");
+        std::filesystem::path(TRIANGLES_TEST_DATA_DIR) / "triangle.txt");
     ASSERT_EQ(result.data.size(), 1U);
     ASSERT_EQ(result.data[0].size(), 3U);
     EXPECT_DOUBLE_EQ(result.data[0][1].x(), 2);
@@ -157,8 +155,8 @@ TEST(Parser, ReadsSceneCoordinatesFromFile) {
 
 TEST(Parser, RejectsMissingFile) {
     EXPECT_THROW(
-        triangles::Parser{}.parse(std::filesystem::path(TRIANGLES_SOURCE_DIR) /
-                                  "tests/nonexistent-directory/scene.txt"),
+        triangles::Parser{}.parse(std::filesystem::path(TRIANGLES_TEST_DATA_DIR) /
+                                  "nonexistent-directory/scene.txt"),
         std::runtime_error);
 }
 

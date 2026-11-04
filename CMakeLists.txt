@@ -150,7 +150,7 @@ if(BUILD_TESTING)
         GeneralFunctions::geometry GTest::gtest_main)
     set_property(TARGET parser_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     target_compile_definitions(parser_tests PRIVATE
-        TRIANGLES_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+        TRIANGLES_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
