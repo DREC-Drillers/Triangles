@@ -7,7 +7,6 @@ endif()
 project(Triangles VERSION 0.1.0 LANGUAGES CXX)
 
 option(TRIANGLES_BUILD_APP "Build the triangle input parser" OFF)
-option(TRIANGLES_BUILD_VISUALIZER "Link the installed Visualizer package to the app" OFF)
 
 include(CTest)
 
@@ -57,14 +56,21 @@ if(TRIANGLES_BUILD_APP)
     )
 
     target_link_libraries(triangles PRIVATE
+        triangles_geometry
         GeneralFunctions::lexer
         GeneralFunctions::files
         GeneralFunctions::geometry)
 
-    if(TRIANGLES_BUILD_VISUALIZER)
+    set(VISUALIZER_SOURCE_DIR "" CACHE PATH "Optional local 3D-Visualizer checkout")
+    if(VISUALIZER_SOURCE_DIR)
+        set(VISUALIZER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(VISUALIZER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        add_subdirectory("${VISUALIZER_SOURCE_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}/visualizer" EXCLUDE_FROM_ALL)
+    else()
         find_package(Visualizer 0.1 CONFIG REQUIRED)
-        target_link_libraries(triangles PRIVATE Visualizer::visualizer)
     endif()
+    target_link_libraries(triangles PRIVATE Visualizer::visualizer)
 
     set_property(TARGET triangles PROPERTY CXX_SCAN_FOR_MODULES ON)
 
@@ -144,7 +150,7 @@ if(BUILD_TESTING)
         GeneralFunctions::geometry GTest::gtest_main)
     set_property(TARGET parser_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     target_compile_definitions(parser_tests PRIVATE
-        TRIANGLES_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+        TRIANGLES_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/data")
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 

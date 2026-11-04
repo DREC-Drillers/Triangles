@@ -1,41 +1,58 @@
 #include <exception>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <span>
+#include <utility>
 
+#include "cameraController/orbitCameraController.hpp"
+#if __has_include("core/backendFactory.hpp")
+#include "core/backendFactory.hpp"
+#include "core/visualizer.hpp"
+#else
+#include "backendFactory.hpp"
+#include "visualizer.hpp"
+#endif
 #include "parser/parser.hpp"
-#include "polygonProcessor/polyWorld.hpp"
+#include "polygonProcessor/polyCalculator.hpp"
+#include "polygonProcessor/renderDataPreparer.hpp"
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        std::cerr << "Usage: triangles_input <scene-file>\n";
+        std::cerr << "Usage: triangles <input-file>\n";
         return 1;
     }
 
     try {
         const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
-        const auto data = triangles::Parser{}.parse(
-            std::filesystem::path{arguments.subspan(1).front()});
-        const triangles::PolyWorld<3> world(data);
+        const auto input =
+            triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
+        const triangles::PolyWorld<3> world(input);
+        const auto result =
+            triangles::PolyCalculator{}.calculateIntersections(world);
+        std::cout << "Triangles: " << world.polys().size()
+                  << "\nIntersecting: " << result.intersectingPolys.size()
+                  << "\nNon-intersecting: " << result.nonIntersectingPolys.size()
+                  << std::endl;
 
-        std::cout << "Read " << world.polys().size() << " polygons\n";
-        std::cout << "PolyWorld created\n";
-
-        for (std::size_t i = 0; i < world.polys().size(); ++i) {
-            const auto& polygon = world.polys()[i];
-            const auto normal = polygon.unitNormal();
-            std::cout << "Polygon " << i + 1 << ":\n";
-            std::cout << "  Vertices: " << polygon.numOfPoints() << '\n';
-            std::cout << "  Area: " << polygon.area() << '\n';
-            std::cout << "  Unit normal: " << normal.x() << ' ' << normal.y() << ' '
-                      << normal.z() << '\n';
-            std::cout << "  Points:\n";
-            for (const auto& point : polygon.points()) {
-                std::cout << "    " << point.x() << ' ' << point.y() << ' '
-                          << point.z() << '\n';
-            }
+        visualizer::Scene scene;
+        for (auto& object : triangles::RenderDataPreparer{}.prepare(result)) {
+            object.material.lit = false;
+            scene.addObject(std::move(object));
         }
 
+        visualizer::Camera camera;
+        constexpr float CAMERA_DISTANCE = 40;
+        camera.setPosition({0, 0, CAMERA_DISTANCE});
+        const auto cameraId = scene.addCamera(std::move(camera));
+
+        visualizer::Viewer viewer(
+            visualizer::BackendFactory::create(visualizer::BackendSettings{}));
+        viewer.addView(scene,
+                       cameraId,
+                       {},
+                       std::make_unique<visualizer::OrbitCameraController>());
+        viewer.run();
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';
         return 1;
