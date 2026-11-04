@@ -1,12 +1,10 @@
-#include "polyCalculator.hpp"
+#include "triangleIntersection.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <stdexcept>
 #include <utility>
-#include <vector>
 
 namespace triangles {
 
@@ -164,6 +162,8 @@ getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
     return result;
 }
 
+} // namespace
+
 bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
     auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
     if (firstPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
@@ -191,45 +191,6 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
 
     return orientationSign(point_t<3>::orient3D(q1, p2, p1, q2)) >= 0 &&
            orientationSign(point_t<3>::orient3D(p1, p2, r1, r2)) >= 0;
-}
-
-} // namespace
-
-IntersectionData PolyCalculator::calculateIntersections(const PolyWorld<3>& world) {
-    IntersectionData intersections{world, {}, {}};
-
-    const auto& polys = world.polys();
-    std::vector<triangle_t<3>> triangles;
-    triangles.reserve(polys.size());
-
-    for (const auto& polygon : polys) {
-        if (polygon.numOfPoints() != 3) {
-            throw std::invalid_argument("Only triangles are supported; other "
-                                        "polygons are not supported yet");
-        }
-        triangles.emplace_back(polygon.point(0), polygon.point(1), polygon.point(2));
-    }
-
-    std::vector<bool> intersects(triangles.size(), false);
-    for (std::size_t first = 0; first < triangles.size(); ++first) {
-        const auto& triangle = triangles[first];
-
-        for (std::size_t second = 0; second < first; ++second) {
-            const auto& other = triangles[second];
-            if (doTrianglesIntersect(triangle, other)) {
-                intersects[first] = true;
-                intersects[second] = true;
-            }
-        }
-    }
-
-    for (std::size_t i = 0; i < polys.size(); ++i) {
-        auto& collection = intersects[i] ? intersections.intersectingPolys
-                                         : intersections.nonIntersectingPolys;
-        collection.push_back(&polys[i]);
-    }
-
-    return intersections;
 }
 
 } // namespace triangles

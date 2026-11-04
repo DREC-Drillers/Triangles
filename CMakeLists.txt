@@ -42,7 +42,11 @@ if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
 endif()
 
 if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
-    add_library(triangles_geometry STATIC polygonProcessor/polyCalculator.cpp)
+    add_library(triangles_geometry STATIC
+        polygonProcessor/polyWorldCalculator/polyCalculator.cpp
+        polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.cpp
+        polygonProcessor/polyWorldCalculator/polyWorldCalculator.cpp
+    )
     target_include_directories(triangles_geometry PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(triangles_geometry PUBLIC GeneralFunctions::geometry)
     set_property(TARGET triangles_geometry PROPERTY CXX_SCAN_FOR_MODULES ON)
@@ -154,11 +158,13 @@ if(BUILD_TESTING)
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
-    add_executable(poly_calculator_tests tests/poly_calculator_test.cpp)
-    target_include_directories(poly_calculator_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(poly_calculator_tests PRIVATE
-        triangles_geometry GeneralFunctions::geometry GTest::gtest_main)
-    set_property(TARGET poly_calculator_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
-    triangles_configure_target(poly_calculator_tests)
-    gtest_discover_tests(poly_calculator_tests)
+    foreach(component poly_calculator triangle_intersection poly_world_calculator)
+        add_executable(${component}_tests tests/${component}_test.cpp)
+        target_include_directories(${component}_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+        target_link_libraries(${component}_tests PRIVATE
+            triangles_geometry GeneralFunctions::geometry GTest::gtest_main)
+        set_property(TARGET ${component}_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
+        triangles_configure_target(${component}_tests)
+        gtest_discover_tests(${component}_tests)
+    endforeach()
 endif()

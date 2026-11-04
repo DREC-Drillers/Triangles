@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "intersectionData.hpp"
+#include "polygonProcessor/polyWorldCalculator/intersections/intersectionData.hpp"
 #include "scene/sceneObject.hpp"
 
 namespace triangles {
