@@ -25,7 +25,7 @@ public:
     // highlights: POINT -> POINTS, SEGMENT -> LINES, POLYGON -> TRIANGLES.
     // Also emit every intersection vertex as POINTS in intersectionColor.
     // Polygon intersections require triangulation, not just copying their vertices.
-    RenderData prepare(const std::vector<geometry::polygon_t>& polys,
+    RenderData prepare(const std::vector<geometry::polygon_t<3>>& polys,
                        const IntersectionData& intersections,
                        const RenderStyle& style) const;
 };

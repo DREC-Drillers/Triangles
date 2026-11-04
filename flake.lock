@@ -25,18 +25,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1793701491,
-        "narHash": "sha256-9u5SCZRWzMC2FDY5t8EEqQLQqkDqYWlE0Lf8d88oOts=",
-        "ref": "main",
-        "rev": "518678f712c81a9580d122f1dece5b2f44ad0883",
-        "revCount": 40,
+        "lastModified": 1793804083,
+        "narHash": "sha256-MkPub8TLS300QOEkw/5phu9mrhZBUabejg39Wz5rFwQ=",
+        "ref": "intersects_calc_upd",
+        "rev": "c36a4f0396631f23f0b6a9cf0535b1ef3d192da1",
+        "revCount": 44,
         "type": "git",
-        "url": "https://github.com/DREC-Drillers/generalFunctions.git"
+        "url": "https://github.com/timoko3/generalFunctions.git"
       },
       "original": {
-        "ref": "main",
+        "ref": "intersects_calc_upd",
         "type": "git",
-        "url": "https://github.com/DREC-Drillers/generalFunctions.git"
+        "url": "https://github.com/timoko3/generalFunctions.git"
       }
     },
     "nixGL": {

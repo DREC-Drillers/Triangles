@@ -42,6 +42,14 @@ if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
     endif()
 endif()
 
+if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
+    add_library(triangles_geometry STATIC polygonProcessor/polyCalculator.cpp)
+    target_include_directories(triangles_geometry PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(triangles_geometry PUBLIC GeneralFunctions::geometry)
+    set_property(TARGET triangles_geometry PROPERTY CXX_SCAN_FOR_MODULES ON)
+    triangles_configure_target(triangles_geometry)
+endif()
+
 if(TRIANGLES_BUILD_APP)
     add_executable(triangles
         main.cpp
@@ -140,21 +148,11 @@ if(BUILD_TESTING)
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
-    add_executable(poly_world_tests tests/poly_world_test.cpp parser/parser.cpp)
-    target_include_directories(poly_world_tests PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/polygonProcessor")
-    target_link_libraries(poly_world_tests PRIVATE
-        GeneralFunctions::lexer GeneralFunctions::files
-        GeneralFunctions::geometry GTest::gtest_main)
-    set_property(TARGET poly_world_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
-    triangles_configure_target(poly_world_tests)
-    gtest_discover_tests(poly_world_tests)
-
-    add_executable(poly_processor_tests tests/poly_processor_test.cpp)
-    target_include_directories(poly_processor_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(poly_processor_tests PRIVATE GeneralFunctions::geometry GTest::gtest_main)
-    set_property(TARGET poly_processor_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
-    triangles_configure_target(poly_processor_tests)
-    gtest_discover_tests(poly_processor_tests)
+    add_executable(poly_calculator_tests tests/poly_calculator_test.cpp)
+    target_include_directories(poly_calculator_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(poly_calculator_tests PRIVATE
+        triangles_geometry GeneralFunctions::geometry GTest::gtest_main)
+    set_property(TARGET poly_calculator_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
+    triangles_configure_target(poly_calculator_tests)
+    gtest_discover_tests(poly_calculator_tests)
 endif()

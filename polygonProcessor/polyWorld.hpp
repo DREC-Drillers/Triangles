@@ -1,9 +1,13 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 #include "initPolysData.hpp"
+
+import geometry;
 
 namespace triangles {
 
@@ -13,23 +17,23 @@ class PolyWorld {
                   "InitPolysData currently supports only 3D coordinates");
 
 private:
-    std::vector<geometry::polygon_t> polys_;
+    std::vector<geometry::polygon_t<3>> polys_;
 
 public:
     explicit PolyWorld(const InitPolysData& initData) {
         polys_.reserve(initData.data.size());
         for (const auto& vertices : initData.data) {
-            polys_.emplace_back(vertices);
+            std::vector<geometry::point_t<3>> points;
+            points.reserve(vertices.size());
+            for (const auto& vertex : vertices) {
+                points.emplace_back(
+                    std::array<double, 3>{vertex.x(), vertex.y(), vertex.z()});
+            }
+            polys_.emplace_back(std::move(points));
         }
     }
 
-    PolyWorld(const PolyWorld&) = default;
-    PolyWorld(PolyWorld&&) = default;
-    PolyWorld& operator=(PolyWorld&&) = default;
-
-    PolyWorld& operator=(const PolyWorld&) = default;
-
-    const std::vector<geometry::polygon_t>& polys() const { return polys_; }
+    const std::vector<geometry::polygon_t<3>>& polys() const { return polys_; }
 };
 
 } // namespace triangles

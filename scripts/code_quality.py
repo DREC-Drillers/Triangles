@@ -34,6 +34,7 @@ def project_files():
         Path(name.decode("utf-8"))
         for name in tracked.split(b"\0")
         if name
+        and (ROOT / Path(name.decode("utf-8"))).is_file()
         and Path(name.decode("utf-8")).suffix in SOURCE_SUFFIXES | HEADER_SUFFIXES
         and Path(name.decode("utf-8")).parts[0] not in {"third_party", "generalFunctions"}
     ]
@@ -148,7 +149,7 @@ def main():
 
     failed = False
     for source in files:
-        if source.suffix not in SOURCE_SUFFIXES:
+        if source.suffix not in SOURCE_SUFFIXES or (ROOT / source).resolve() not in compiled:
             continue
         command = tidy_command(source, build_dir, compiled, options)
         print(f"Analyzing {source}", flush=True)

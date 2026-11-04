@@ -1,6 +1,7 @@
 #include <exception>
 #include <filesystem>
 #include <iostream>
+#include <span>
 
 #include "parser/parser.hpp"
 #include "polygonProcessor/polyWorld.hpp"
@@ -12,7 +13,9 @@ int main(int argc, char* argv[]) {
     }
 
     try {
-        const auto data = triangles::Parser{}.parse(std::filesystem::path{argv[1]});
+        const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
+        const auto data = triangles::Parser{}.parse(
+            std::filesystem::path{arguments.subspan(1).front()});
         const triangles::PolyWorld<3> world(data);
 
         std::cout << "Read " << world.polys().size() << " polygons\n";
