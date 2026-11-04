@@ -38,19 +38,19 @@ int orientationSign(double orientation) {
 }
 
 bool triangleHasEdgeSeparatingFromOther(
-    const std::array<point_t<2>, 3>& curTriangle,
-    const std::array<point_t<2>, 3>& otherTriangle) {
+    const triangle_t<2>& curTriangle,
+    const triangle_t<2>& otherTriangle) {
 
     for (std::size_t edgeNum = 0; edgeNum < 3; ++edgeNum) {
-        const auto& firstEdgeVert = curTriangle[edgeNum];              // TODO
-        const auto& secondEdgeVert = curTriangle[(edgeNum + 1) % 3];  // segment edge??
-        const auto& freeVert = curTriangle[(edgeNum + 2) % 3];
+        const auto& firstEdgeVert = curTriangle.point(edgeNum);              //TODO
+        const auto& secondEdgeVert = curTriangle.point((edgeNum + 1) % 3);  // segment edge??
+        const auto& freeVert = curTriangle.point((edgeNum + 2) % 3);
 
         const int insideSign = orientationSign(
             point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, freeVert));
         // TODO pointToSegmentOrientFunc
         bool allOutside = true;
-        for (const auto& point : otherTriangle) {
+        for (const auto& point : otherTriangle.points()) {
             if (orientationSign(point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, point)) != -insideSign ||
                 insideSign == 0) {
                 allOutside = false;
@@ -64,7 +64,7 @@ bool triangleHasEdgeSeparatingFromOther(
     return false;
 }
 
-bool areTrianglesIntersectOnPlane(const triangle_t& first, const triangle_t& second) {
+bool areTrianglesIntersectOnPlane(const triangle_t<3>& first, const triangle_t<3>& second) {
     const auto normal = first.unitNormal();
 
     const std::array<double, 3> normalComponents{
@@ -73,12 +73,12 @@ bool areTrianglesIntersectOnPlane(const triangle_t& first, const triangle_t& sec
         std::max_element(normalComponents.begin(), normalComponents.end()) -
         normalComponents.begin();
 
-    const std::array<point_t<2>, 3> projectedFirst{
+    const triangle_t<2> projectedFirst{
         first.a().project(droppedAxis),
         first.b().project(droppedAxis),
         first.c().project(droppedAxis)};
 
-    const std::array<point_t<2>, 3> projectedSecond{
+    const triangle_t<2> projectedSecond{
         second.a().project(droppedAxis),
         second.b().project(droppedAxis),
         second.c().project(droppedAxis)};
@@ -129,8 +129,8 @@ void canonicalizeTriangle(planeRelativeTriangle_t& curTriangle,
 }
 
 planeRelativeTriangle_t
-getTrianglePosToPlaneOfTriangle(const triangle_t& curTriangle,
-                              const triangle_t& planeTriangle) {
+getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
+                                const triangle_t<3>& planeTriangle) {
     const double firstVertexOrient = point_t<3>::orient3D(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.a());
     const double secondVertexOrient = point_t<3>::orient3D(
@@ -166,7 +166,7 @@ getTrianglePosToPlaneOfTriangle(const triangle_t& curTriangle,
     return result;
 }
 
-bool doTrianglesIntersect(const triangle_t& first, const triangle_t& second) {
+bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
     auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
     if (firstPos.relation == trianglePosToPlane_t::DOES_NOT_INTERSECT) {
         return false;
@@ -201,7 +201,7 @@ IntersectionData PolyCalculator::calculateIntersections(const PolyWorld<3>& worl
     IntersectionData intersections{world, {}, {}};
 
     const auto& polys = world.polys();
-    std::vector<triangle_t> triangles;
+    std::vector<triangle_t<3>> triangles;
     triangles.reserve(polys.size());
 
     for (const auto& polygon : polys) {

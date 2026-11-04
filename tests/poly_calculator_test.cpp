@@ -66,7 +66,7 @@ TEST(PolyCalculator, HandlesEmptyAndSingleTriangle) {
     EXPECT_EQ(&singleResult.world, &single);
     EXPECT_TRUE(singleResult.intersectingPolys.empty());
     EXPECT_EQ(singleResult.nonIntersectingPolys,
-              (std::vector<const geometry::polygon_t*>{&single.polys()[0]}));
+              (std::vector<const geometry::polygon_t<3>*>{&single.polys()[0]}));
 }
 
 TEST(PolyCalculator, PartitionsPointersIntoOriginalWorld) {
@@ -78,10 +78,10 @@ TEST(PolyCalculator, PartitionsPointersIntoOriginalWorld) {
     const auto result = PolyCalculator{}.calculateIntersections(world);
     EXPECT_EQ(&result.world, &world);
     EXPECT_EQ(result.intersectingPolys,
-              (std::vector<const geometry::polygon_t*>{&world.polys()[0],
+              (std::vector<const geometry::polygon_t<3>*>{&world.polys()[0],
                                                        &world.polys()[1]}));
     EXPECT_EQ(result.nonIntersectingPolys,
-              (std::vector<const geometry::polygon_t*>{&world.polys()[2]}));
+              (std::vector<const geometry::polygon_t<3>*>{&world.polys()[2]}));
     EXPECT_EQ(world.polys().data(), original);
     const auto repeated = PolyCalculator{}.calculateIntersections(world);
     EXPECT_EQ(repeated.intersectingPolys, result.intersectingPolys);
@@ -123,7 +123,7 @@ TEST(PolyCalculator, HandlesDisjointCoplanarTriangles) {
     const auto result = PolyCalculator{}.calculateIntersections(world);
     EXPECT_TRUE(result.intersectingPolys.empty());
     EXPECT_EQ(result.nonIntersectingPolys,
-              (std::vector<const geometry::polygon_t*>{&world.polys()[0],
+              (std::vector<const geometry::polygon_t<3>*>{&world.polys()[0],
                                                        &world.polys()[1]}));
 }
 
@@ -134,7 +134,7 @@ TEST(PolyCalculator, HandlesTrianglesOnParallelPlanes) {
     const auto result = PolyCalculator{}.calculateIntersections(world);
     EXPECT_TRUE(result.intersectingPolys.empty());
     EXPECT_EQ(result.nonIntersectingPolys,
-              (std::vector<const geometry::polygon_t*>{&world.polys()[0],
+              (std::vector<const geometry::polygon_t<3>*>{&world.polys()[0],
                                                        &world.polys()[1]}));
 }
 
@@ -183,9 +183,9 @@ TEST_P(TrianglePairIntersection, IsIndependentOfVertexOrderPairOrderAndProjectio
                     }
                     const PolyWorld<3> world(input);
                     const auto result = PolyCalculator{}.calculateIntersections(world);
-                    const std::vector<const geometry::polygon_t*> both{
+                    const std::vector<const geometry::polygon_t<3>*> both{
                         &world.polys()[0], &world.polys()[1]};
-                    const std::vector<const geometry::polygon_t*> none;
+                    const std::vector<const geometry::polygon_t<3>*> none;
                     EXPECT_EQ(&result.world, &world);
                     EXPECT_EQ(result.intersectingPolys, testCase.intersects ? both : none);
                     EXPECT_EQ(result.nonIntersectingPolys, testCase.intersects ? none : both);
@@ -248,11 +248,11 @@ TEST(PolyCalculator, PartitionsInterleavedIndependentGroupsInInputOrder) {
     const auto result = PolyCalculator{}.calculateIntersections(world);
     EXPECT_EQ(&result.world, &world);
     EXPECT_EQ(result.intersectingPolys,
-              (std::vector<const geometry::polygon_t*>{
+              (std::vector<const geometry::polygon_t<3>*>{
                   &world.polys()[1], &world.polys()[2],
                   &world.polys()[4], &world.polys()[5]}));
     EXPECT_EQ(result.nonIntersectingPolys,
-              (std::vector<const geometry::polygon_t*>{
+              (std::vector<const geometry::polygon_t<3>*>{
                   &world.polys()[0], &world.polys()[3], &world.polys()[6]}));
 }
 
