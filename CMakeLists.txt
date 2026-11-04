@@ -150,7 +150,8 @@ if(BUILD_TESTING)
 
     add_executable(poly_calculator_tests tests/poly_calculator_test.cpp)
     target_include_directories(poly_calculator_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_link_libraries(poly_calculator_tests PRIVATE triangles_geometry GTest::gtest_main)
+    target_link_libraries(poly_calculator_tests PRIVATE
+        triangles_geometry GeneralFunctions::geometry GTest::gtest_main)
     set_property(TARGET poly_calculator_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
     triangles_configure_target(poly_calculator_tests)
     gtest_discover_tests(poly_calculator_tests)
