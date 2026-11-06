@@ -6,6 +6,7 @@
 
 #include <gtest/gtest.h>
 
+#include "polygonProcessor/polyWorldCalculator/polyCalculator.hpp"
 #include "polygonProcessor/polyWorldCalculator/polyWorldCalculator.hpp"
 
 namespace {
@@ -13,6 +14,50 @@ namespace {
 using triangles::InitPolysData;
 using triangles::PolyWorld;
 using triangles::PolyWorldCalculator;
+
+TEST(PolyWorldCalculator, RejectsSeparatedBoundsDespiteOrientationTolerance) {
+    const PolyWorld<3> world(
+        InitPolysData{{{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}},
+                       {{0, 0, 1e-12}, {1, 0, 1e-12}, {0, 1, 1e-12}}}});
+
+    EXPECT_FALSE(
+        triangles::PolyCalculator{}.intersects(world.polys()[0], world.polys()[1]));
+    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    EXPECT_TRUE(result.intersectingPolys.empty());
+    EXPECT_EQ(result.nonIntersectingPolys.size(), 2U);
+}
+
+TEST(PolyWorldCalculator, MatchesBruteForceForMultipleSpatialGroups) {
+    InitPolysData input;
+    for (int group = 0; group < 30; ++group) {
+        const double x = group * 10;
+        input.data.push_back({{x, 0, 0}, {x + 2, 0, 0}, {x, 2, 0}});
+        const double offset = group % 2 ? 1 : 3;
+        input.data.push_back(
+            {{x + offset, 0, 0}, {x + offset + 2, 0, 0}, {x + offset, 2, 0}});
+    }
+    const PolyWorld<3> world(input);
+    const auto& polygons = world.polys();
+    std::vector<bool> marked(polygons.size(), false);
+    for (std::size_t first = 0; first < polygons.size(); ++first) {
+        for (std::size_t second = 0; second < first; ++second) {
+            if (triangles::PolyCalculator{}.intersects(polygons.at(first),
+                                                       polygons.at(second))) {
+                marked[first] = true;
+                marked[second] = true;
+            }
+        }
+    }
+
+    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    std::vector<const geometry::polygon_t<3>*> intersecting;
+    std::vector<const geometry::polygon_t<3>*> nonIntersecting;
+    for (std::size_t id = 0; id < polygons.size(); ++id) {
+        (marked[id] ? intersecting : nonIntersecting).push_back(&polygons.at(id));
+    }
+    EXPECT_EQ(result.intersectingPolys, intersecting);
+    EXPECT_EQ(result.nonIntersectingPolys, nonIntersecting);
+}
 
 TEST(PolyWorld, PreservesPolygonVertices) {
     const PolyWorld<3> world(InitPolysData{{{{0, 0, 0}, {4, 0, 0}, {0, 4, 0}}}});

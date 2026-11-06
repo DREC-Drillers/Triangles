@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+#include "polygonProcessor/polyWorldCalculator/intersections/triangleBounds.hpp"
 #include "polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.hpp"
 
 namespace triangles {
@@ -22,6 +23,10 @@ bool PolyCalculator::intersects(const geometry::polygon_t<3>& first,
 
 bool PolyCalculator::intersects(const geometry::triangle_t<3>& first,
                                 const geometry::triangle_t<3>& second) const {
+    if (!triangleBounds(first).overlaps(triangleBounds(second))) {
+        return false;
+    }
+
     return doTrianglesIntersect(first, second);
 }
 

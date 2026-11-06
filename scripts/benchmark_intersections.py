@@ -118,7 +118,11 @@ def write_plot(path, rows):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--binary", type=Path, default=Path("build/profile/triangles"))
-    parser.add_argument("--counts", type=int, nargs="+", default=[100, 500, 1000, 2500, 5000])
+    parser.add_argument(
+        "--counts", type=int, nargs="+",
+        default=[100, 500, 1000, 2500, 5000, 10000, 25000, 50000,
+                 100000, 250000, 500000, 1000000],
+    )
     parser.add_argument("--fractions", type=float, nargs="+", default=[0, 0.25, 0.5, 0.75, 1])
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=1)
