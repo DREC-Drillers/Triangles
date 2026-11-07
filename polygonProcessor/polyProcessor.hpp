@@ -2,9 +2,9 @@
 
 #include <cstddef>
 
-#include "intersectionData.hpp"
-#include "polyCalculator.hpp"
 #include "polyWorld.hpp"
+#include "polyWorldCalculator/intersections/intersectionData.hpp"
+#include "polyWorldCalculator/polyWorldCalculator.hpp"
 
 namespace triangles {
 
@@ -21,7 +21,7 @@ public:
     const PolyWorld<dimWorld>& world() const { return world_; }
 
     IntersectionData calculateIntersections() const {
-        PolyCalculator calculator;
+        PolyWorldCalculator calculator;
         return calculateIntersections(calculator);
     }
 

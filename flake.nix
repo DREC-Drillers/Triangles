@@ -16,7 +16,7 @@
     };
 
     generalFunctions = {
-      url = "git+https://github.com/timoko3/generalFunctions.git?ref=intersects_calc_upd";
+      url = "git+https://github.com/DREC-Drillers/generalFunctions.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
