@@ -6,7 +6,7 @@ endif()
 
 project(Triangles VERSION 0.1.0 LANGUAGES CXX)
 
-option(TRIANGLES_BUILD_APP "Build the triangle input parser" OFF)
+option(TRIANGLES_BUILD_APP "Build the Triangles application" ON)
 
 include(CTest)
 
