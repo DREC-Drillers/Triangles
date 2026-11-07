@@ -105,8 +105,13 @@ python3 scripts/code_quality.py format-fix
 cmake --preset quality
 cmake --build --preset quality
 python3 scripts/code_quality.py tidy --build-dir build/quality
+python3 scripts/code_quality.py tidy --build-dir build/quality --cppcoreguidelines
 python3 scripts/code_quality.py style-fix --build-dir build/quality
 ```
+
+`cppcoreguidelines-*` checks are disabled by default, including in CI.
+Use `tidy --cppcoreguidelines` to enable them locally as advisory warnings.
+Other enabled checks still treat warnings as errors in that mode.
 
 Formatting uses the complete clang-format 18 configuration from cacheResearch
 (four spaces, attached braces, 85 columns, LF). Naming and defect checks also
