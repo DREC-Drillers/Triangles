@@ -36,6 +36,11 @@ private:
     using NodeId = Tree::NodeId;
 
     NodeData makeNode(std::size_t begin, std::size_t count) const;
+    std::size_t selectSplitAxis(std::size_t begin, std::size_t count,
+                                const std::vector<Aabb::Coordinates>& centers) const;
+    std::size_t partitionObjects(std::size_t begin, std::size_t count,
+                                 std::size_t splitAxis,
+                                 const std::vector<Aabb::Coordinates>& centers);
     void build(NodeId node, const std::vector<Aabb::Coordinates>& centers);
 
     template <typename Visitor>

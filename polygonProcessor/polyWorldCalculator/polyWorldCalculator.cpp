@@ -7,18 +7,13 @@
 
 #include "intersections/triangleBounds.hpp"
 #include "polyCalculator.hpp"
-
-#ifdef TRIANGLES_USE_BVH
 #include "spatial/bvh.hpp"
-#endif
 
 namespace triangles {
 
 struct PolyWorldCalculator::PreparedIntersectionSearch {
     std::vector<geometry::triangle_t<3>> triangles;
-#ifdef TRIANGLES_USE_BVH
     Bvh index;
-#endif
 };
 
 PolyWorldCalculator::PreparedIntersectionSearch
@@ -34,16 +29,12 @@ PolyWorldCalculator::prepareIntersectionSearch(const PolyWorld<3>& world) const 
         triangles.emplace_back(polygon.point(0), polygon.point(1), polygon.point(2));
     }
 
-#ifdef TRIANGLES_USE_BVH
     std::vector<Aabb> bounds;
     bounds.reserve(triangles.size());
     for (const auto& triangle : triangles) {
         bounds.push_back(triangleBounds(triangle));
     }
     return {std::move(triangles), Bvh(std::move(bounds))};
-#else
-    return {std::move(triangles)};
-#endif
 }
 
 IntersectionData
@@ -67,13 +58,7 @@ PolyWorldCalculator::calculateIntersections(const PolyWorld<3>& world) const {
             return true;
         };
 
-#ifdef TRIANGLES_USE_BVH
         prepared.index.query(prepared.index.objectBounds(first), checkPair);
-#else
-        for (std::size_t second = 0; second < first; ++second) {
-            checkPair(second);
-        }
-#endif
     }
 
     for (std::size_t i = 0; i < polys.size(); ++i) {
