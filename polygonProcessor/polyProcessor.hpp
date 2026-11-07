@@ -27,7 +27,7 @@ public:
 
     template <typename Calculator>
     IntersectionData calculateIntersections(Calculator& calculator) const {
-        return calculator.calculateIntersections(world_.polys());
+        return calculator.calculateIntersections(world_);
     }
 };
 

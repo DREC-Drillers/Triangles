@@ -14,7 +14,7 @@
 #include "visualizer.hpp"
 #endif
 #include "parser/parser.hpp"
-#include "polygonProcessor/polyCalculator.hpp"
+#include "polygonProcessor/polyProcessor.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
 
 int main(int argc, char* argv[]) {
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
         const auto input =
             triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
         const triangles::PolyWorld<3> world(input);
-        const auto result =
-            triangles::PolyCalculator{}.calculateIntersections(world);
+        const triangles::PolyProcessor<3> processor(world);
+        const auto result = processor.calculateIntersections();
         std::cout << "Triangles: " << world.polys().size()
                   << "\nIntersecting: " << result.intersectingPolys.size()
                   << "\nNon-intersecting: " << result.nonIntersectingPolys.size()
