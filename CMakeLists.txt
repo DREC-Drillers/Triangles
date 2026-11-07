@@ -35,25 +35,23 @@ if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
         set(GENERAL_FUNCTIONS_BUILD_GEOMETRY ON)
         set(GENERAL_FUNCTIONS_BUILD_TESTS OFF)
         set(GENERAL_FUNCTIONS_BUILD_TREE ON)
+        set(GENERAL_FUNCTIONS_BUILD_BVH ON)
         add_subdirectory("${GENERAL_FUNCTIONS_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}/general-functions" EXCLUDE_FROM_ALL)
     else()
-        find_package(GeneralFunctions CONFIG REQUIRED COMPONENTS lexer files geometry tree)
+        find_package(GeneralFunctions CONFIG REQUIRED COMPONENTS lexer files geometry bvh)
     endif()
 endif()
 
 if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
     add_library(triangles_geometry STATIC
-        polygonProcessor/polyWorldCalculator/spatial/aabb.cpp
-        polygonProcessor/polyWorldCalculator/spatial/bvh.cpp
         polygonProcessor/polyWorldCalculator/intersections/triangleBounds.cpp
-        polygonProcessor/polyWorldCalculator/polyCalculator.cpp
         polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.cpp
         polygonProcessor/polyWorldCalculator/polyWorldCalculator.cpp
     )
     target_include_directories(triangles_geometry PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(triangles_geometry PUBLIC
-        GeneralFunctions::geometry GeneralFunctions::tree)
+        GeneralFunctions::geometry GeneralFunctions::bvh)
     set_property(TARGET triangles_geometry PROPERTY CXX_SCAN_FOR_MODULES ON)
     triangles_configure_target(triangles_geometry)
 endif()
@@ -130,7 +128,7 @@ if(BUILD_TESTING)
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
-    foreach(component aabb bvh poly_calculator triangle_intersection poly_world_calculator)
+    foreach(component triangle_intersection poly_world_calculator)
         add_executable(${component}_tests tests/${component}_test.cpp)
         target_include_directories(${component}_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
         target_link_libraries(${component}_tests PRIVATE
