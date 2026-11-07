@@ -91,39 +91,6 @@ if(TRIANGLES_BUILD_APP)
     triangles_configure_target(triangles)
 endif()
 
-option(TRIANGLES_BUILD_OPENGL_DEMO "Build the OpenGL example" OFF)
-
-if(TRIANGLES_BUILD_OPENGL_DEMO)
-    enable_language(C)
-    find_package(glfw3 CONFIG REQUIRED)
-    find_package(glm CONFIG REQUIRED)
-
-    set(GLAD_SOURCE_DIR ""
-        CACHE PATH "Override path to generated GLAD 2 sources")
-    if(GLAD_SOURCE_DIR)
-        set(glad_source_dir "${GLAD_SOURCE_DIR}")
-    else()
-        set(glad_source_dir "$ENV{GLAD_SOURCE_DIR}")
-    endif()
-
-    if(NOT EXISTS "${glad_source_dir}/src/gl.c" OR
-       NOT EXISTS "${glad_source_dir}/include/glad/gl.h")
-        message(FATAL_ERROR
-            "GLAD 2 sources not found at '${glad_source_dir}'. Run inside nix develop "
-            "or pass -DGLAD_SOURCE_DIR=/path/to/generated/glad")
-    endif()
-
-    add_library(glad STATIC "${glad_source_dir}/src/gl.c")
-    target_compile_features(glad PRIVATE c_std_99)
-    target_include_directories(glad SYSTEM PUBLIC "${glad_source_dir}/include")
-
-    add_executable(opengl_demo examples/opengl_demo.cpp)
-    target_link_libraries(opengl_demo PRIVATE glfw glad glm::glm)
-    target_compile_definitions(opengl_demo PRIVATE GLFW_INCLUDE_NONE)
-
-    triangles_configure_target(opengl_demo)
-endif()
-
 if(BUILD_TESTING)
     find_package(GTest CONFIG REQUIRED)
     include(GoogleTest)

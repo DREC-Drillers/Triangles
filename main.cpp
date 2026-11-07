@@ -16,7 +16,7 @@
 #include "visualizer.hpp"
 #endif
 #include "parser/parser.hpp"
-#include "polygonProcessor/polyWorldCalculator/polyWorldCalculator.hpp"
+#include "polygonProcessor/polyProcessor.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
 
 int main(int argc, char* argv[]) {
@@ -37,8 +37,8 @@ int main(int argc, char* argv[]) {
         const auto parsed = Clock::now();
         const triangles::PolyWorld<3> world(input);
         const auto worldCreated = Clock::now();
-        const auto result =
-            triangles::PolyWorldCalculator{}.calculateIntersections(world);
+        const triangles::PolyProcessor<3> processor(world);
+        const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
 
         visualizer::Scene scene;

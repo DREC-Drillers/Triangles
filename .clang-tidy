@@ -37,7 +37,7 @@ Checks: >-
 # Optional residency and exception propagation need a separate contract review;
 # do not enable every bugprone check indiscriminately.
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(^|[/\\])(parser|polygonProcessor|render|tests)[/\\].*\.(h|hh|hpp|hxx)$'
+HeaderFilterRegex: '(^|[/\\])(parser|polygonProcessor|tests)[/\\].*\.(h|hh|hpp|hxx)$'
 SystemHeaders: false
 FormatStyle: file
 CheckOptions:
