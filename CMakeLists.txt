@@ -46,7 +46,6 @@ endif()
 if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
     add_library(triangles_geometry STATIC
         polygonProcessor/polyWorldCalculator/intersections/triangleBounds.cpp
-        polygonProcessor/polyWorldCalculator/polyCalculator.cpp
         polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.cpp
         polygonProcessor/polyWorldCalculator/polyWorldCalculator.cpp
     )
@@ -162,7 +161,7 @@ if(BUILD_TESTING)
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
-    foreach(component poly_calculator triangle_intersection poly_world_calculator)
+    foreach(component triangle_intersection poly_world_calculator)
         add_executable(${component}_tests tests/${component}_test.cpp)
         target_include_directories(${component}_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
         target_link_libraries(${component}_tests PRIVATE

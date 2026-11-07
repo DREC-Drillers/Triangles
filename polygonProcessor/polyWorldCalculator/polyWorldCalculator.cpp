@@ -6,13 +6,25 @@
 #include <vector>
 
 #include "intersections/triangleBounds.hpp"
-#include "polyCalculator.hpp"
+#include "intersections/triangleIntersection.hpp"
 #include "spetial/bvh.hpp"
 
 namespace triangles {
 
 using geometry::axisAlignedBoundingBox_t;
 using general_functions::Bvh;
+
+namespace {
+
+bool intersectsTriangles(const geometry::triangle_t<3>& first,
+                         const geometry::triangle_t<3>& second) {
+    if (!triangleBounds(first).overlaps(triangleBounds(second))) {
+        return false;
+    }
+    return doTrianglesIntersect(first, second);
+}
+
+} // namespace
 
 struct PolyWorldCalculator::PreparedIntersectionSearch {
     std::vector<geometry::triangle_t<3>> triangles;
@@ -48,15 +60,14 @@ PolyWorldCalculator::calculateIntersections(const PolyWorld<3>& world) const {
     const auto prepared = prepareIntersectionSearch(world);
     const auto& triangles = prepared.triangles;
 
-    const PolyCalculator calculator;
     std::vector<bool> intersects(triangles.size(), false);
 
     for (std::size_t first = 0; first < triangles.size(); ++first) {
-        const auto& triangle = triangles[first];
+        const auto& firstTriangle = triangles[first];
 
         const auto checkPair = [&](std::size_t second) {
             if (second < first &&
-                calculator.intersects(triangle, triangles.at(second))) {
+                intersectsTriangles(firstTriangle, triangles.at(second))) {
                 intersects[first] = true;
                 intersects[second] = true;
             }
