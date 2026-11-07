@@ -42,19 +42,6 @@
         packages.pyyaml
       ]);
 
-      gladSources = pkgs.runCommand "glad-opengl-3.3" {
-        nativeBuildInputs = [
-          pkgs.python3Packages.glad2
-        ];
-      } ''
-        glad \
-          --api gl:core=3.3 \
-          --extensions "" \
-          --reproducible \
-          --out-path "$out" \
-          c
-      '';
-
       mkQualityTool = tool: pkgs.writeShellScriptBin "${tool}-18" ''
         exec ${llvm.clang-tools}/bin/${tool} "$@"
       '';
@@ -84,7 +71,6 @@
         ];
 
         GENERAL_FUNCTIONS_TEST_SOURCE_DIR = "${generalFunctions}";
-        GLAD_SOURCE_DIR = "${gladSources}";
         GENERAL_FUNCTIONS_CLANG_SCAN_DEPS = "${llvm.clang-tools}/bin/clang-scan-deps";
         # Expose wrapper settings checked when clang-tidy loads a compiled module.
         CXXFLAGS = "-fstack-protector-strong -fwrapv -fPIC -fstrict-flex-arrays=1";
