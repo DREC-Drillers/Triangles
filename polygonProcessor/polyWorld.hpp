@@ -43,6 +43,8 @@ public:
         }
     }
 
+    ~PolyWorld() = default;
+
     PolyWorld(const PolyWorld&) = delete;
     PolyWorld& operator=(const PolyWorld&) = delete;
 

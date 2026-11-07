@@ -4,7 +4,8 @@
 
 namespace triangles {
 
-geometry::axisAlignedBoundingBox_t triangleBounds(const geometry::triangle_t<3>& triangle) {
+geometry::axisAlignedBoundingBox_t
+triangleBounds(const geometry::triangle_t<3>& triangle) {
     const auto& a = triangle.a();
     const auto& b = triangle.b();
     const auto& c = triangle.c();

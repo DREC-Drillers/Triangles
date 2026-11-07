@@ -20,15 +20,15 @@
 #include "polygonProcessor/renderDataPreparer.hpp"
 
 int main(int argc, char* argv[]) {
+    const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
     const bool noVisualization =
-        argc == 3 && std::string_view(argv[2]) == "--no-visualization";
+        argc == 3 && std::string_view(arguments[2]) == "--no-visualization";
     if (argc != 2 && !noVisualization) {
         std::cerr << "Usage: triangles <input-file> [--no-visualization]\n";
         return 1;
     }
 
     try {
-        const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
         using Clock = std::chrono::steady_clock;
 
         const auto start = Clock::now();

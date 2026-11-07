@@ -1,11 +1,11 @@
 #include <array>
+#include <memory>
 #include <ostream>
 #include <stdexcept>
 #include <string>
-#include <vector>
-#include <memory>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -31,7 +31,8 @@ TEST(PolyWorldCalculator, RejectsSeparatedBoundsDespiteOrientationTolerance) {
 
 TEST(PolyWorldCalculator, MatchesBruteForceForMultipleSpatialGroups) {
     InitPolysData input;
-    for (int group = 0; group < 30; ++group) {
+    constexpr int GROUP_COUNT = 30;
+    for (int group = 0; group < GROUP_COUNT; ++group) {
         const double x = group * 10;
         input.data.push_back({{x, 0, 0}, {x + 2, 0, 0}, {x, 2, 0}});
         const double offset = group % 2 ? 1 : 3;
@@ -44,12 +45,13 @@ TEST(PolyWorldCalculator, MatchesBruteForceForMultipleSpatialGroups) {
     for (std::size_t first = 0; first < polygons.size(); ++first) {
         for (std::size_t second = 0; second < first; ++second) {
             const auto makeTriangle = [](const auto& polygon) {
-                return geometry::triangle_t<3>(polygon->point(0), polygon->point(1),
-                                               polygon->point(2));
+                return geometry::triangle_t<3>(
+                    polygon->point(0), polygon->point(1), polygon->point(2));
             };
             const auto a = makeTriangle(polygons.at(first));
             const auto b = makeTriangle(polygons.at(second));
-            if (triangles::triangleBounds(a).overlaps(triangles::triangleBounds(b)) &&
+            if (triangles::triangleBounds(a).overlaps(
+                    triangles::triangleBounds(b)) &&
                 triangles::doTrianglesIntersect(a, b)) {
                 marked[first] = true;
                 marked[second] = true;
@@ -61,7 +63,8 @@ TEST(PolyWorldCalculator, MatchesBruteForceForMultipleSpatialGroups) {
     std::vector<const geometry::polygon_t<3>*> intersecting;
     std::vector<const geometry::polygon_t<3>*> nonIntersecting;
     for (std::size_t id = 0; id < polygons.size(); ++id) {
-        (marked[id] ? intersecting : nonIntersecting).push_back(polygons.at(id).get());
+        (marked[id] ? intersecting : nonIntersecting)
+            .push_back(polygons.at(id).get());
     }
     EXPECT_EQ(result.intersectingPolys, intersecting);
     EXPECT_EQ(result.nonIntersectingPolys, nonIntersecting);
@@ -172,8 +175,9 @@ TEST(PolyWorldCalculator, PartitionsInterleavedIndependentGroupsInInputOrder) {
                                                           world.polys()[4].get(),
                                                           world.polys()[5].get()}));
     EXPECT_EQ(result.nonIntersectingPolys,
-              (std::vector<const geometry::polygon_t<3>*>{
-                  world.polys()[0].get(), world.polys()[3].get(), world.polys()[6].get()}));
+              (std::vector<const geometry::polygon_t<3>*>{world.polys()[0].get(),
+                                                          world.polys()[3].get(),
+                                                          world.polys()[6].get()}));
 }
 
 } // namespace
@@ -181,21 +185,25 @@ TEST(PolyWorldCalculator, PartitionsInterleavedIndependentGroupsInInputOrder) {
 namespace {
 
 using triangles::InitPolysData;
-using triangles::PolyWorldCalculator;
 using triangles::PolyWorld;
+using triangles::PolyWorldCalculator;
 
 TEST(PolyWorldCalculator, ChecksIntersectingPolygons) {
     const PolyWorld<3> world(InitPolysData{
         {{{0, 0, 0}, {4, 0, 0}, {0, 4, 0}}, {{1, 1, -1}, {1, 1, 1}, {2, 1, 1}}}});
 
-    EXPECT_EQ(PolyWorldCalculator{}.calculateIntersections(world).intersectingPolys.size(), 2U);
+    EXPECT_EQ(
+        PolyWorldCalculator{}.calculateIntersections(world).intersectingPolys.size(),
+        2U);
 }
 
 TEST(PolyWorldCalculator, ChecksDisjointPolygons) {
     const PolyWorld<3> world(InitPolysData{
         {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}, {{2, 2, 0}, {3, 2, 0}, {2, 3, 0}}}});
 
-    EXPECT_TRUE(PolyWorldCalculator{}.calculateIntersections(world).intersectingPolys.empty());
+    EXPECT_TRUE(PolyWorldCalculator{}
+                    .calculateIntersections(world)
+                    .intersectingPolys.empty());
 }
 
 TEST(PolyWorldCalculator, RejectsUnsupportedPolygonInEitherPosition) {
@@ -221,9 +229,9 @@ static_assert(!std::is_copy_constructible_v<PolyWorld<3>>);
 static_assert(std::is_nothrow_move_constructible_v<PolyWorld<3>>);
 
 TEST(PolyWorld, PreservesTriangleTypeAndSupportsOtherPolygons) {
-    const PolyWorld<3> world(InitPolysData{
-        {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}},
-         {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}}}});
+    const PolyWorld<3> world(
+        InitPolysData{{{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}},
+                       {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}}}});
     ASSERT_NE(dynamic_cast<const geometry::triangle_t<3>*>(world.polys()[0].get()),
               nullptr);
     EXPECT_EQ(dynamic_cast<const geometry::triangle_t<3>*>(world.polys()[1].get()),
@@ -250,6 +258,11 @@ TEST(PolyWorld, BasePointerDestroysDerivedPolygon) {
                                       geometry::point_t<3>({0, 1, 0})}),
               destroyed_(destroyed) {}
         ~PolygonProbe() override { destroyed_ = true; }
+        PolygonProbe(const PolygonProbe&) = delete;
+        PolygonProbe& operator=(const PolygonProbe&) = delete;
+        PolygonProbe(PolygonProbe&&) = delete;
+        PolygonProbe& operator=(PolygonProbe&&) = delete;
+
     private:
         bool& destroyed_;
     };

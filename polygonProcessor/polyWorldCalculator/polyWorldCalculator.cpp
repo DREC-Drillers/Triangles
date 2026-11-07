@@ -11,8 +11,8 @@
 
 namespace triangles {
 
-using geometry::axisAlignedBoundingBox_t;
 using general_functions::Bvh;
+using geometry::axisAlignedBoundingBox_t;
 
 namespace {
 
