@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "polyWorld.hpp"
+#include "polygonProcessor/polyWorld.hpp"
 
 namespace triangles {
 

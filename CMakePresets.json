@@ -12,14 +12,14 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "TRIANGLES_BUILD_APP": false,
+        "TRIANGLES_BUILD_APP": true,
         "BUILD_TESTING": true,
         "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS": "$env{GENERAL_FUNCTIONS_CLANG_SCAN_DEPS}"
       }
     },
     {
       "name": "debug",
-      "displayName": "Debug with tests",
+      "displayName": "Debug application and tests",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -27,18 +27,19 @@
     },
     {
       "name": "release",
-      "displayName": "Release with tests",
+      "displayName": "Release application and tests",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "app",
-      "displayName": "Triangle input parser",
-      "inherits": "debug",
+      "name": "profile",
+      "displayName": "Optimized application with debug symbols",
+      "inherits": "base",
       "cacheVariables": {
-        "TRIANGLES_BUILD_APP": true
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTING": false
       }
     },
     {
@@ -46,7 +47,6 @@
       "displayName": "Compilation database for clang-tidy",
       "inherits": "debug",
       "cacheVariables": {
-        "TRIANGLES_BUILD_APP": true,
         "CMAKE_CXX_FLAGS": "$env{CXXFLAGS}",
         "CMAKE_EXPORT_COMPILE_COMMANDS": true
       }
@@ -55,19 +55,23 @@
   "buildPresets": [
     {
       "name": "debug",
-      "configurePreset": "debug"
+      "configurePreset": "debug",
+      "jobs": 2
     },
     {
       "name": "release",
-      "configurePreset": "release"
+      "configurePreset": "release",
+      "jobs": 2
     },
     {
-      "name": "app",
-      "configurePreset": "app"
+      "name": "profile",
+      "configurePreset": "profile",
+      "jobs": 2
     },
     {
       "name": "quality",
-      "configurePreset": "quality"
+      "configurePreset": "quality",
+      "jobs": 2
     }
   ],
   "testPresets": [
@@ -94,16 +98,6 @@
     {
       "name": "quality",
       "configurePreset": "quality",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error"
-      }
-    },
-    {
-      "name": "app",
-      "configurePreset": "app",
       "output": {
         "outputOnFailure": true
       },

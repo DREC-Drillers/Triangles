@@ -118,7 +118,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("check", choices=["format", "format-fix", "tidy", "style-fix"])
     parser.add_argument("--build-dir", default="build/quality")
+    parser.add_argument("--cppcoreguidelines", action="store_true",
+                        help="Include advisory C++ Core Guidelines checks in tidy")
     args = parser.parse_args()
+    if args.cppcoreguidelines and args.check != "tidy":
+        parser.error("--cppcoreguidelines is only supported for tidy")
     files = project_files()
     if not files:
         parser.error("No tracked project C/C++ files found")
@@ -137,6 +141,11 @@ def main():
         (Path(entry["directory"]) / entry["file"]).resolve() for entry in database
     }
     options = []
+    if args.cppcoreguidelines:
+        options = [
+            "--checks=cppcoreguidelines-*,-cppcoreguidelines-avoid-const-or-ref-data-members",
+            "--warnings-as-errors=*,-cppcoreguidelines-*",
+        ]
     if args.check == "style-fix":
         check_format_version()
         if fix_naming(files, build_dir, compiled) != 0:
