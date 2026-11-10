@@ -35,9 +35,9 @@ int main(int argc, char* argv[]) {
         const auto input =
             triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
         const auto parsed = Clock::now();
-        const triangles::PolyWorld<3> world(input);
+        const triangles::PolyWorld world(input);
         const auto worldCreated = Clock::now();
-        const triangles::PolyProcessor<3> processor(world);
+        const triangles::PolyProcessor processor(world);
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
 

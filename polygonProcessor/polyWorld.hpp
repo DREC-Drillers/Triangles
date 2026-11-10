@@ -12,11 +12,7 @@ import geometry;
 
 namespace triangles {
 
-template <std::size_t dimWorld>
 class PolyWorld {
-    static_assert(dimWorld == 3,
-                  "InitPolysData currently supports only 3D coordinates");
-
 private:
     std::vector<std::unique_ptr<geometry::polygon_t<3>>> polys_;
 

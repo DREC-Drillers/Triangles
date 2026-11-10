@@ -8,17 +8,16 @@
 
 namespace triangles {
 
-template <std::size_t dimWorld>
 class PolyProcessor {
 private:
-    const PolyWorld<dimWorld>& world_;
+    const PolyWorld& world_;
 
 public:
-    explicit PolyProcessor(const PolyWorld<dimWorld>& world) : world_(world) {}
-    PolyProcessor(PolyWorld<dimWorld>&&) = delete;
-    PolyProcessor(const PolyWorld<dimWorld>&&) = delete;
+    explicit PolyProcessor(const PolyWorld& world) : world_(world) {}
+    PolyProcessor(PolyWorld&&) = delete;
+    PolyProcessor(const PolyWorld&&) = delete;
 
-    const PolyWorld<dimWorld>& world() const { return world_; }
+    const PolyWorld& world() const { return world_; }
 
     IntersectionData calculateIntersections() const {
         PolyWorldCalculator calculator;

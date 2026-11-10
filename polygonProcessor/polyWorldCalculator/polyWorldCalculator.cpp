@@ -27,7 +27,7 @@ const geometry::triangle_t<3>& asTriangle(const geometry::polygon_t<3>& polygon)
 
 } // namespace
 
-Bvh PolyWorldCalculator::prepareBvh(const PolyWorld<3>& world) const {
+Bvh PolyWorldCalculator::prepareBvh(const PolyWorld& world) const {
     std::vector<axisAlignedBoundingBox_t> bounds;
     bounds.reserve(world.polys().size());
     for (const auto& polygon : world.polys()) {
@@ -37,7 +37,7 @@ Bvh PolyWorldCalculator::prepareBvh(const PolyWorld<3>& world) const {
 }
 
 IntersectionData
-PolyWorldCalculator::calculateIntersections(const PolyWorld<3>& world) const {
+PolyWorldCalculator::calculateIntersections(const PolyWorld& world) const {
     IntersectionData intersections{world, {}, {}};
 
     const auto& polys = world.polys();

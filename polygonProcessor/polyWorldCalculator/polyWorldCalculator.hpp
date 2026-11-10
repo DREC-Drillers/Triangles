@@ -10,12 +10,11 @@ namespace triangles {
 
 class PolyWorldCalculator {
 public:
-    IntersectionData calculateIntersections(const PolyWorld<3>& world) const;
-    IntersectionData
-    calculateIntersections(const PolyWorld<3>&& world) const = delete;
+    IntersectionData calculateIntersections(const PolyWorld& world) const;
+    IntersectionData calculateIntersections(const PolyWorld&& world) const = delete;
 
 private:
-    general_functions::Bvh prepareBvh(const PolyWorld<3>& world) const;
+    general_functions::Bvh prepareBvh(const PolyWorld& world) const;
 };
 
 } // namespace triangles
