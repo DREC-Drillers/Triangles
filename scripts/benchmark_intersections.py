@@ -34,7 +34,7 @@ def measure(binary, path, count, intersecting):
         [str(binary), str(path), "--no-visualization"],
         check=True, capture_output=True, text=True,
     )
-    values = dict(line.split(": ", 1) for line in result.stdout.splitlines()
+    values = dict(line.split(": ", 1) for line in result.stderr.splitlines()
                   if ": " in line)
     expected = {"Triangles": count, "Intersecting": intersecting,
                 "Non-intersecting": count - intersecting}

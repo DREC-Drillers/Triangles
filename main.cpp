@@ -1,10 +1,12 @@
 #include <chrono>
+#include <cstddef>
 #include <exception>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <span>
 #include <string_view>
+#include <unordered_set>
 #include <utility>
 
 #include "cameraController/orbitCameraController.hpp"
@@ -41,6 +43,15 @@ int main(int argc, char* argv[]) {
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
 
+        const std::unordered_set<const geometry::polygon_t<3>*> intersecting(
+            result.intersectingPolys.begin(), result.intersectingPolys.end());
+        for (std::size_t index = 0; index < world.polys().size(); ++index) {
+            if (intersecting.contains(world.polys()[index].get())) {
+                std::cout << index << '\n';
+            }
+        }
+        std::cout.flush();
+
         visualizer::Scene scene;
         for (auto& object : triangles::RenderDataPreparer{}.prepare(result)) {
             object.material.lit = false;
@@ -52,7 +63,7 @@ int main(int argc, char* argv[]) {
             return std::chrono::duration<double, std::milli>(end - begin).count();
         };
 
-        std::cout << "Triangles: " << world.polys().size()
+        std::cerr << "Triangles: " << world.polys().size()
                   << "\nIntersecting: " << result.intersectingPolys.size()
                   << "\nNon-intersecting: " << result.nonIntersectingPolys.size()
                   << "\nParsing_ms: " << milliseconds(start, parsed)
