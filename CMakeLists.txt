@@ -45,6 +45,7 @@ endif()
 
 if(TRIANGLES_BUILD_APP OR BUILD_TESTING)
     add_library(triangles_geometry STATIC
+        polygonProcessor/polyWorldCalculator/intersections/intersection.cpp
         polygonProcessor/polyWorldCalculator/intersections/triangleBounds.cpp
         polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.cpp
         polygonProcessor/polyWorldCalculator/polyWorldCalculator.cpp
