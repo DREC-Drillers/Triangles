@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <stdexcept>
 #include <vector>
 
@@ -41,6 +42,52 @@ public:
     }
 
 private:
+    static visualizer::Vertex
+    toRenderVertex(const geometry::point_t<3>& point,
+                   const std::array<float, 3>& normal = {}) {
+        return {{static_cast<float>(point.x()),
+                 static_cast<float>(point.y()),
+                 static_cast<float>(point.z())},
+                normal};
+    }
+
+    static visualizer::SceneObject preparePoint(const geometry::point_t<3>& point,
+                                                const std::array<float, 4>& color) {
+        visualizer::SceneObject object;
+        object.geometry.topology = visualizer::Topology::Points;
+        object.material.color = color;
+        object.material.lit = false;
+        object.geometry.vertices.push_back(toRenderVertex(point));
+        return object;
+    }
+
+    static visualizer::SceneObject
+    prepareSegment(const geometry::polygon_t<3>& polygon,
+                   const std::array<float, 4>& color) {
+        const auto& points = polygon.points();
+        std::size_t firstEndpoint = 0;
+        std::size_t secondEndpoint = 0;
+        double longestDistance = 0;
+        for (std::size_t first = 0; first < points.size(); ++first) {
+            for (std::size_t second = first + 1; second < points.size(); ++second) {
+                const double distance = points[first].distance(points[second]);
+                if (distance > longestDistance) {
+                    longestDistance = distance;
+                    firstEndpoint = first;
+                    secondEndpoint = second;
+                }
+            }
+        }
+
+        visualizer::SceneObject object;
+        object.geometry.topology = visualizer::Topology::Lines;
+        object.material.color = color;
+        object.material.lit = false;
+        object.geometry.vertices = {toRenderVertex(points[firstEndpoint]),
+                                    toRenderVertex(points[secondEndpoint])};
+        return object;
+    }
+
     static visualizer::SceneObject
     prepareTriangle(const geometry::polygon_t<3>& polygon,
                     const std::array<float, 4>& color) {
@@ -48,6 +95,17 @@ private:
         if (points.size() != 3) {
             throw std::invalid_argument(
                 "RenderDataPreparer: expected exactly 3 vertices");
+        }
+
+        if (points[0].distance(points[1]) == 0 &&
+            points[0].distance(points[2]) == 0) {
+            return preparePoint(points[0], color);
+        }
+
+        const auto areaVector = geometry::vector_t(points[0], points[1])
+                                    .cross(geometry::vector_t(points[0], points[2]));
+        if (areaVector.length() == 0) {
+            return prepareSegment(polygon, color);
         }
 
         visualizer::SceneObject object;
@@ -62,10 +120,7 @@ private:
                                           static_cast<float>(n.z())};
 
         for (const auto& point : points) {
-            object.geometry.vertices.push_back({{static_cast<float>(point.x()),
-                                                 static_cast<float>(point.y()),
-                                                 static_cast<float>(point.z())},
-                                                normal});
+            object.geometry.vertices.push_back(toRenderVertex(point, normal));
         }
         return object;
     }
