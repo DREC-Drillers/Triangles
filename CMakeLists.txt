@@ -129,7 +129,7 @@ if(BUILD_TESTING)
     triangles_configure_target(parser_tests)
     gtest_discover_tests(parser_tests)
 
-    foreach(component triangle_intersection poly_world_calculator)
+    foreach(component intersection triangle_intersection poly_world_calculator)
         add_executable(${component}_tests tests/${component}_test.cpp)
         target_include_directories(${component}_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
         target_link_libraries(${component}_tests PRIVATE
