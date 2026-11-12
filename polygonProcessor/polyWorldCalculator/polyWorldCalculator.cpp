@@ -53,7 +53,7 @@ PolyWorldCalculator::calculateIntersections(const PolyWorld& world) const {
             }
 
             const auto& secondTriangle = asTriangle(*polys.at(second));
-            if (doTrianglesIntersect(firstTriangle, secondTriangle)) {
+            if (doIntersect(firstTriangle, secondTriangle)) {
                 intersects[first] = true;
                 intersects[second] = true;
             }
