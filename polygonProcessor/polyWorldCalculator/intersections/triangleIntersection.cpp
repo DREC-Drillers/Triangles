@@ -38,19 +38,19 @@ int orientationSign(double orientation) {
 bool triangleHasEdgeSeparatingFromOther(const triangle_t<2>& curTriangle,
                                         const triangle_t<2>& otherTriangle) {
     for (std::size_t edgeNum = 0; edgeNum < 3; ++edgeNum) {
-        const auto& firstEdgeVert = curTriangle.point(edgeNum); // TODO
-        const auto& secondEdgeVert =
-            curTriangle.point((edgeNum + 1) % 3); // segment edge??
+        const auto& firstEdgeVert = curTriangle.point(edgeNum);
+        const auto& secondEdgeVert = curTriangle.point((edgeNum + 1) % 3);
         const auto& freeVert = curTriangle.point((edgeNum + 2) % 3);
 
-        const int insideSign = orientationSign(
-            point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, freeVert));
-        // TODO pointToSegmentOrientFunc
+        const int insideSign =
+            point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, freeVert) < 0 ? -1
+                                                                              : 1;
+        const double edgeLength = firstEdgeVert.distance(secondEdgeVert);
         bool allOutside = true;
         for (const auto& point : otherTriangle.points()) {
-            if (orientationSign(point_t<2>::orient2D(
-                    firstEdgeVert, secondEdgeVert, point)) != -insideSign ||
-                insideSign == 0) {
+            if (orientationSign(
+                    point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, point) /
+                    edgeLength) != -insideSign) {
                 allOutside = false;
                 break;
             }
@@ -127,12 +127,12 @@ void canonicalizeTriangle(PlaneRelativeTriangle& curTriangle,
 PlaneRelativeTriangle
 getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
                                 const triangle_t<3>& planeTriangle) {
-    const double firstVertexOrient = point_t<3>::orient3D(
-        planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.a());
-    const double secondVertexOrient = point_t<3>::orient3D(
-        planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.b());
-    const double thirdVertexOrient = point_t<3>::orient3D(
-        planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.c());
+    const double firstVertexOrient = curTriangle.a().signedDistanceToPlane(
+        planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
+    const double secondVertexOrient = curTriangle.b().signedDistanceToPlane(
+        planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
+    const double thirdVertexOrient = curTriangle.c().signedDistanceToPlane(
+        planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
 
     PlaneRelativeTriangle result{{{{curTriangle.a(), firstVertexOrient},
                                    {curTriangle.b(), secondVertexOrient},
@@ -169,13 +169,13 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     if (firstPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
         return false;
     }
-    if (firstPos.relation == TrianglePosToPlane::BELONGS) {
-        return areTrianglesIntersectOnPlane(first, second);
-    }
-
     auto secondPos = getTrianglePosToPlaneOfTriangle(second, first);
     if (secondPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
         return false;
+    }
+    if (firstPos.relation == TrianglePosToPlane::BELONGS &&
+        secondPos.relation == TrianglePosToPlane::BELONGS) {
+        return areTrianglesIntersectOnPlane(first, second);
     }
 
     canonicalizeTriangle(firstPos, secondPos);
@@ -189,8 +189,8 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     const auto& q2 = secondPos.vertices[1].vertex;
     const auto& r2 = secondPos.vertices[2].vertex;
 
-    return orientationSign(point_t<3>::orient3D(q1, p2, p1, q2)) >= 0 &&
-           orientationSign(point_t<3>::orient3D(p1, p2, r1, r2)) >= 0;
+    return orientationSign(q2.signedDistanceToPlane(q1, p2, p1)) >= 0 &&
+           orientationSign(r2.signedDistanceToPlane(p1, p2, r1)) >= 0;
 }
 
 } // namespace triangles
