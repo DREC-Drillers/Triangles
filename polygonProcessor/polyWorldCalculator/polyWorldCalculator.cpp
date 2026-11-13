@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "intersections/intersection.hpp"
-#include "intersections/triangleBounds.hpp"
 #include "spetial/bvh.hpp"
 
 namespace triangles {
@@ -31,7 +30,7 @@ Bvh PolyWorldCalculator::prepareBvh(const PolyWorld& world) const {
     std::vector<axisAlignedBoundingBox_t> bounds;
     bounds.reserve(world.polys().size());
     for (const auto& polygon : world.polys()) {
-        bounds.push_back(triangleBounds(asTriangle(*polygon)));
+        bounds.push_back(asTriangle(*polygon).aabbBounds());
     }
     return Bvh(std::move(bounds));
 }

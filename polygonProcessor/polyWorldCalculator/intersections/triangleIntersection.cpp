@@ -130,7 +130,7 @@ getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
     const double firstVertexOrient = curTriangle.a().signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
     const double secondVertexOrient = curTriangle.b().signedDistanceToPlane(
-        planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.b());
+        planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
     const double thirdVertexOrient = curTriangle.c().signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
 

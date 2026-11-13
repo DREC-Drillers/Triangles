@@ -9,7 +9,6 @@
 
 #include <gtest/gtest.h>
 
-#include "polygonProcessor/polyWorldCalculator/intersections/triangleBounds.hpp"
 #include "polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.hpp"
 #include "polygonProcessor/polyWorldCalculator/polyWorldCalculator.hpp"
 
@@ -50,8 +49,7 @@ TEST(PolyWorldCalculator, MatchesBruteForceForMultipleSpatialGroups) {
             };
             const auto a = makeTriangle(polygons.at(first));
             const auto b = makeTriangle(polygons.at(second));
-            if (triangles::triangleBounds(a).overlaps(
-                    triangles::triangleBounds(b)) &&
+            if (a.aabbBounds().overlaps(b.aabbBounds()) &&
                 triangles::doTrianglesIntersect(a, b)) {
                 marked[first] = true;
                 marked[second] = true;
