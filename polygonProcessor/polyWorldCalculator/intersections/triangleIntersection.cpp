@@ -12,7 +12,6 @@ namespace {
 
 using geometry::point_t;
 using geometry::triangle_t;
-using geometry::vector_t;
 
 enum class TrianglePosToPlane { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
 
@@ -34,16 +33,6 @@ int orientationSign(double orientation) {
     if (orientation < -ORIENTATION_EPSILON)
         return -1;
     return 0;
-}
-
-double signedDistanceToPlane(const point_t<3>& a, const point_t<3>& b,
-                             const point_t<3>& c, const point_t<3>& point) {
-    const auto normal = vector_t(a, b).cross(vector_t(a, c));
-    if (normal.length() == 0.0) {
-        return 0.0;
-    }
-
-    return vector_t(point, a).dot(normal.normalized());
 }
 
 bool triangleHasEdgeSeparatingFromOther(const triangle_t<2>& curTriangle,
@@ -138,12 +127,12 @@ void canonicalizeTriangle(PlaneRelativeTriangle& curTriangle,
 PlaneRelativeTriangle
 getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
                                 const triangle_t<3>& planeTriangle) {
-    const double firstVertexOrient = signedDistanceToPlane(
-        planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.a());
-    const double secondVertexOrient = signedDistanceToPlane(
+    const double firstVertexOrient = curTriangle.a().signedDistanceToPlane(
+        planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
+    const double secondVertexOrient = curTriangle.b().signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.b());
-    const double thirdVertexOrient = signedDistanceToPlane(
-        planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.c());
+    const double thirdVertexOrient = curTriangle.c().signedDistanceToPlane(
+        planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
 
     PlaneRelativeTriangle result{{{{curTriangle.a(), firstVertexOrient},
                                    {curTriangle.b(), secondVertexOrient},
@@ -200,8 +189,8 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     const auto& q2 = secondPos.vertices[1].vertex;
     const auto& r2 = secondPos.vertices[2].vertex;
 
-    return orientationSign(signedDistanceToPlane(q1, p2, p1, q2)) >= 0 &&
-           orientationSign(signedDistanceToPlane(p1, p2, r1, r2)) >= 0;
+    return orientationSign(q2.signedDistanceToPlane(q1, p2, p1)) >= 0 &&
+           orientationSign(r2.signedDistanceToPlane(p1, p2, r1)) >= 0;
 }
 
 } // namespace triangles
