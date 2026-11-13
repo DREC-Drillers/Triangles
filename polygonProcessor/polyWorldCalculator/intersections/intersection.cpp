@@ -188,6 +188,11 @@ bool doSegmentAndTriangleIntersect(const segment_t& segment,
         }
     }
 
+    if (pointLiesInTrianglePlain(segment.a(), triangle) &&
+        pointLiesInTrianglePlain(segment.b(), triangle)) {
+        return false;
+    }
+
     if (!doSegmentIntersectTrianglePlain(segment, triangle)) {
         return false;
     }

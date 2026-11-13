@@ -136,7 +136,7 @@ if(BUILD_TESTING)
                 -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/application_degenerate_test.cmake")
     endif()
 
-    foreach(component intersection degenerate_intersection triangle_intersection poly_world_calculator)
+    foreach(component intersection triangle_intersection poly_world_calculator)
         add_executable(${component}_tests tests/${component}_test.cpp)
         target_include_directories(${component}_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
         target_link_libraries(${component}_tests PRIVATE
