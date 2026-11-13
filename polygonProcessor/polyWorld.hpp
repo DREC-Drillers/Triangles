@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <memory>
 #include <utility>
@@ -21,20 +20,11 @@ public:
         polys_.reserve(initData.data.size());
 
         for (const auto& vertices : initData.data) {
-            std::vector<geometry::point_t<3>> points;
-            points.reserve(vertices.size());
-
-            for (const auto& vertex : vertices) {
-                points.emplace_back(
-                    std::array<double, 3>{vertex.x(), vertex.y(), vertex.z()});
-            }
-
-            if (points.size() == 3) {
+            if (vertices.size() == 3) {
                 polys_.push_back(std::make_unique<geometry::triangle_t<3>>(
-                    points[0], points[1], points[2]));
+                    vertices[0], vertices[1], vertices[2]));
             } else {
-                polys_.push_back(
-                    std::make_unique<geometry::polygon_t<3>>(std::move(points)));
+                polys_.push_back(std::make_unique<geometry::polygon_t<3>>(vertices));
             }
         }
     }

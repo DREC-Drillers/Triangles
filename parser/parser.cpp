@@ -1,5 +1,6 @@
 #include "parser.hpp"
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -47,7 +48,7 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
             const double x = tokens.expectDouble("Expected x coordinate" + context);
             const double y = tokens.expectDouble("Expected y coordinate" + context);
             const double z = tokens.expectDouble("Expected z coordinate" + context);
-            vertices.emplace_back(x, y, z);
+            vertices.emplace_back(std::array<double, 3>{x, y, z});
         }
         result.data.push_back(std::move(vertices));
     }

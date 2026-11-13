@@ -54,7 +54,6 @@ int main(int argc, char* argv[]) {
 
         visualizer::Scene scene;
         for (auto& object : triangles::RenderDataPreparer{}.prepare(result)) {
-            object.material.lit = false;
             scene.addObject(std::move(object));
         }
         const auto scenePrepared = Clock::now();

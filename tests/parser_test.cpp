@@ -12,7 +12,7 @@
 namespace {
 
 static_assert(std::is_same_v<triangles::InitPolysData::PolygonPoints::value_type,
-                             triangles::InitPolysData::Point>);
+                             geometry::point_t<3>>);
 
 triangles::InitPolysData parse(const std::string& source) {
     auto tokens = lexer::Lexer(source, "scene.txt").tokenize();
