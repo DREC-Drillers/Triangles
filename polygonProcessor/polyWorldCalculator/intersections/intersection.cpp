@@ -9,7 +9,6 @@
 
 namespace triangles {
 
-
 using geometry::point_t;
 using geometry::segment_t;
 using geometry::triangle_t;
@@ -72,17 +71,18 @@ RealTriangleForm determineRealTriangleForm(const triangle_t<3>& triangle) {
 
 segment_t degenerateTriangleToSegment(const triangle_t<3>& triangle) {
     const std::array lengths{triangle.lenAB(), triangle.lenBC(), triangle.lenCA()};
-    const std::size_t firstVert =
+    const std::size_t first =
         std::max_element(lengths.begin(), lengths.end()) - lengths.begin();
-    return segment_t(triangle.point(firstVert), triangle.point((firstVert + 1) % 3));
+    return segment_t(triangle.point(first), triangle.point((first + 1) % 3));
 }
 
-bool pointLiesInTrianglePlain(const point_t<3>& point, const triangle_t<3>& triangle) {
+bool pointLiesInTrianglePlain(const point_t<3>& point,
+                              const triangle_t<3>& triangle) {
     const auto normal = triangle.unitNormal();
     vector_t pointDir(triangle.a(), point);
 
     const auto pointDistanceToPlane = pointDir.dot(normal);
-    return std::abs(pointDistanceToPlane) < DISTANCE_EPSILON;
+    return std::abs(pointDistanceToPlane) <= DISTANCE_EPSILON;
 }
 
 bool doPointAndPointIntersect(const point_t<3>& firstPoint,
@@ -92,16 +92,18 @@ bool doPointAndPointIntersect(const point_t<3>& firstPoint,
 
 bool doPointAndSegmentIntersect(const point_t<3>& point, const segment_t& segment) {
     const auto direction = segment.direction();
-    const vector_t pointDir(segment.a(), point);
+    const vector_t offset(segment.a(), point);
+    const auto unitDirection = direction.normalized();
 
-    return direction.cross(pointDir).length() <= DISTANCE_EPSILON * direction.length() &&
-           direction.dot(pointDir) >= 0 &&
-           pointDir.length() <= direction.length();
+    const double projection = offset.dot(unitDirection);
+
+    return unitDirection.cross(offset).length() <= DISTANCE_EPSILON &&
+           projection >= -DISTANCE_EPSILON &&
+           projection <= segment.length() + DISTANCE_EPSILON;
 }
 
 bool doPointAndTriangleIntersect(const point_t<3>& point,
                                  const triangle_t<3>& triangle) {
-
     if (!pointLiesInTrianglePlain(point, triangle)) {
         return false;
     }
@@ -134,18 +136,17 @@ bool doSegmentAndSegmentIntersect(const segment_t& first, const segment_t& secon
         return false;
     }
     const auto unitNormal = normal.normalized();
-
-    if (std::abs(vector_t(first.a(), second.a()).dot(unitNormal)) >=
+    if (std::abs(vector_t(first.a(), second.a()).dot(unitNormal)) >
             DISTANCE_EPSILON ||
-        std::abs(vector_t(first.a(), second.b()).dot(unitNormal)) >=
+        std::abs(vector_t(first.a(), second.b()).dot(unitNormal)) >
             DISTANCE_EPSILON) {
         return false;
     }
-
     return first.isIntersectsCoplanar(second, unitNormal);
 }
 
-bool doSegmentIntersectTrianglePlain(const segment_t& segment, const triangle_t<3>& triangle) {
+bool doSegmentIntersectTrianglePlain(const segment_t& segment,
+                                     const triangle_t<3>& triangle) {
     const auto normal = triangle.unitNormal();
 
     const double startDistance = vector_t(triangle.a(), segment.a()).dot(normal);
@@ -161,7 +162,6 @@ bool doSegmentIntersectTrianglePlain(const segment_t& segment, const triangle_t<
 
 point_t<3> getSegAndTrianglePlaneIntersectPoint(const segment_t& segment,
                                                 const triangle_t<3>& triangle) {
-
     const auto normal = triangle.unitNormal();
     const double startDistance = vector_t(triangle.a(), segment.a()).dot(normal);
     const double endDistance = vector_t(triangle.a(), segment.b()).dot(normal);
@@ -170,8 +170,8 @@ point_t<3> getSegAndTrianglePlaneIntersectPoint(const segment_t& segment,
         segment.direction() * (startDistance / (startDistance - endDistance));
 
     return point_t<3>({segment.a().x() + pointDir.x(),
-                      segment.a().y() + pointDir.y(),
-                      segment.a().z() + pointDir.z()});
+                       segment.a().y() + pointDir.y(),
+                       segment.a().z() + pointDir.z()});
 }
 
 bool doSegmentAndTriangleIntersect(const segment_t& segment,
@@ -180,25 +180,21 @@ bool doSegmentAndTriangleIntersect(const segment_t& segment,
         doPointAndTriangleIntersect(segment.b(), triangle)) {
         return true;
     }
-
-    if (pointLiesInTrianglePlain(segment.a(), triangle) &&
-        pointLiesInTrianglePlain(segment.b(), triangle)) {
-        for (std::size_t i = 0; i < 3; ++i) {
-            const segment_t edge(triangle.point(i), triangle.point((i + 1) % 3));
-            if (doSegmentAndSegmentIntersect(segment, edge)) {
-                return true;
-            }
+    for (std::size_t i = 0; i < 3; ++i) {
+        if (doSegmentAndSegmentIntersect(
+                segment,
+                segment_t(triangle.point(i), triangle.point((i + 1) % 3)))) {
+            return true;
         }
-
-        return false;
     }
 
     if (!doSegmentIntersectTrianglePlain(segment, triangle)) {
         return false;
     }
 
-    const point_t<3> intersectPoint = getSegAndTrianglePlaneIntersectPoint (segment, triangle);
-    return doPointAndTriangleIntersect(intersectPoint, triangle);
+    const auto intersection =
+        getSegAndTrianglePlaneIntersectPoint(segment, triangle);
+    return doPointAndTriangleIntersect(intersection, triangle);
 }
 
 } // namespace triangles

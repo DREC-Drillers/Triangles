@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
+#include "intersections/intersection.hpp"
 #include "intersections/triangleBounds.hpp"
-#include "intersections/triangleIntersection.hpp"
 #include "spetial/bvh.hpp"
 
 namespace triangles {

@@ -12,6 +12,7 @@ namespace {
 
 using geometry::point_t;
 using geometry::triangle_t;
+using geometry::vector_t;
 
 enum class TrianglePosToPlane { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
 
@@ -35,22 +36,32 @@ int orientationSign(double orientation) {
     return 0;
 }
 
+double signedDistanceToPlane(const point_t<3>& a, const point_t<3>& b,
+                             const point_t<3>& c, const point_t<3>& point) {
+    const auto normal = vector_t(a, b).cross(vector_t(a, c));
+    if (normal.length() == 0.0) {
+        return 0.0;
+    }
+
+    return vector_t(point, a).dot(normal.normalized());
+}
+
 bool triangleHasEdgeSeparatingFromOther(const triangle_t<2>& curTriangle,
                                         const triangle_t<2>& otherTriangle) {
     for (std::size_t edgeNum = 0; edgeNum < 3; ++edgeNum) {
-        const auto& firstEdgeVert = curTriangle.point(edgeNum); // TODO
-        const auto& secondEdgeVert =
-            curTriangle.point((edgeNum + 1) % 3); // segment edge??
+        const auto& firstEdgeVert = curTriangle.point(edgeNum);
+        const auto& secondEdgeVert = curTriangle.point((edgeNum + 1) % 3);
         const auto& freeVert = curTriangle.point((edgeNum + 2) % 3);
 
-        const int insideSign = orientationSign(
-            point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, freeVert));
-        // TODO pointToSegmentOrientFunc
+        const int insideSign =
+            point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, freeVert) < 0 ? -1
+                                                                              : 1;
+        const double edgeLength = firstEdgeVert.distance(secondEdgeVert);
         bool allOutside = true;
         for (const auto& point : otherTriangle.points()) {
-            if (orientationSign(point_t<2>::orient2D(
-                    firstEdgeVert, secondEdgeVert, point)) != -insideSign ||
-                insideSign == 0) {
+            if (orientationSign(
+                    point_t<2>::orient2D(firstEdgeVert, secondEdgeVert, point) /
+                    edgeLength) != -insideSign) {
                 allOutside = false;
                 break;
             }
@@ -127,11 +138,11 @@ void canonicalizeTriangle(PlaneRelativeTriangle& curTriangle,
 PlaneRelativeTriangle
 getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
                                 const triangle_t<3>& planeTriangle) {
-    const double firstVertexOrient = point_t<3>::orient3D(
+    const double firstVertexOrient = signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.a());
-    const double secondVertexOrient = point_t<3>::orient3D(
+    const double secondVertexOrient = signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.b());
-    const double thirdVertexOrient = point_t<3>::orient3D(
+    const double thirdVertexOrient = signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c(), curTriangle.c());
 
     PlaneRelativeTriangle result{{{{curTriangle.a(), firstVertexOrient},
@@ -169,13 +180,13 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     if (firstPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
         return false;
     }
-    if (firstPos.relation == TrianglePosToPlane::BELONGS) {
-        return areTrianglesIntersectOnPlane(first, second);
-    }
-
     auto secondPos = getTrianglePosToPlaneOfTriangle(second, first);
     if (secondPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
         return false;
+    }
+    if (firstPos.relation == TrianglePosToPlane::BELONGS &&
+        secondPos.relation == TrianglePosToPlane::BELONGS) {
+        return areTrianglesIntersectOnPlane(first, second);
     }
 
     canonicalizeTriangle(firstPos, secondPos);
@@ -189,8 +200,8 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     const auto& q2 = secondPos.vertices[1].vertex;
     const auto& r2 = secondPos.vertices[2].vertex;
 
-    return orientationSign(point_t<3>::orient3D(q1, p2, p1, q2)) >= 0 &&
-           orientationSign(point_t<3>::orient3D(p1, p2, r1, r2)) >= 0;
+    return orientationSign(signedDistanceToPlane(q1, p2, p1, q2)) >= 0 &&
+           orientationSign(signedDistanceToPlane(p1, p2, r1, r2)) >= 0;
 }
 
 } // namespace triangles

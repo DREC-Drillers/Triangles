@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "polygonProcessor/polyWorldCalculator/intersections/intersection.hpp"
+#include "polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.hpp"
 
 namespace {
 
@@ -17,7 +18,8 @@ enum class IntersectionKind {
     POINT_SEGMENT,
     POINT_TRIANGLE,
     SEGMENT_SEGMENT,
-    SEGMENT_TRIANGLE
+    SEGMENT_TRIANGLE,
+    TRIANGLE_TRIANGLE
 };
 
 constexpr Vertices point(Coordinates coordinates) {
@@ -102,6 +104,8 @@ bool intersect(IntersectionKind kind, const geometry::triangle_t<3>& first,
         case IntersectionKind::SEGMENT_TRIANGLE:
             return triangles::doSegmentAndTriangleIntersect(makeSegment(first),
                                                             second);
+        case IntersectionKind::TRIANGLE_TRIANGLE:
+            return triangles::doTrianglesIntersect(first, second);
     }
     ADD_FAILURE() << "Unknown intersection kind";
     return false;
@@ -137,6 +141,8 @@ TEST_P(TriangleFormIntersection, IsIndependentOfVertexOrderAndProjectionAxis) {
 
                 EXPECT_EQ(intersect(testCase.kind, first, second),
                           testCase.expected);
+                EXPECT_EQ(triangles::doIntersect(first, second), testCase.expected);
+                EXPECT_EQ(triangles::doIntersect(second, first), testCase.expected);
                 if (testCase.kind == IntersectionKind::POINT_POINT ||
                     testCase.kind == IntersectionKind::SEGMENT_SEGMENT) {
                     EXPECT_EQ(intersect(testCase.kind, second, first),
@@ -423,6 +429,11 @@ INSTANTIATE_TEST_SUITE_P(
                                      IntersectionKind::SEGMENT_SEGMENT,
                                      segment({0, 0, 0}, {4, 0, 0}),
                                      segment({2, -1, 0.5e-9}, {2, 1, 0.5e-9}),
+                                     true},
+                    IntersectionCase{"SegmentsAtCoplanarityToleranceCross",
+                                     IntersectionKind::SEGMENT_SEGMENT,
+                                     segment({0, 0, 0}, {4, 0, 0}),
+                                     segment({2, -1, 1e-9}, {2, 1, 1e-9}),
                                      true},
                     IntersectionCase{"SegmentCrossesTriangleWithShortEdge",
                                      IntersectionKind::SEGMENT_TRIANGLE,
