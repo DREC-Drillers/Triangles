@@ -16,12 +16,11 @@ using geometry::axisAlignedBoundingBox_t;
 namespace {
 
 const geometry::triangle_t<3>& asTriangle(const geometry::polygon_t<3>& polygon) {
-    const auto* triangle = dynamic_cast<const geometry::triangle_t<3>*>(&polygon);
-    if (triangle == nullptr) {
+    if (polygon.numOfPoints() != 3) {
         throw std::invalid_argument("Only triangles are supported; other "
                                     "polygons are not supported yet");
     }
-    return *triangle;
+    return static_cast<const geometry::triangle_t<3>&>(polygon);
 }
 
 } // namespace
