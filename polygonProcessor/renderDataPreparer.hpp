@@ -11,13 +11,13 @@
 namespace triangles {
 
 struct RenderStyle {
-    std::array<float, 4> polyColor{0.7f, 0.7f, 0.7f, 1.0f};
+    std::array<float, 4> polyColor{0.7f, 0.7f, 0.7f, 1.0f};  //FIXME в settings задание цвета
     std::array<float, 4> intersectingPolyColor{1.0f, 0.0f, 0.0f, 1.0f};
 };
 
 class RenderDataPreparer {
 public:
-    std::vector<visualizer::SceneObject>
+    std::vector<visualizer::SceneObject>   //FIXME make static 
     prepare(const IntersectionData& intersections,
             const RenderStyle& style = {}) const {
         std::vector<visualizer::SceneObject> objects;
@@ -54,7 +54,7 @@ private:
     static visualizer::SceneObject preparePoint(const geometry::point_t<3>& point,
                                                 const std::array<float, 4>& color) {
         visualizer::SceneObject object;
-        object.geometry.topology = visualizer::Topology::Points;
+        object.geometry.topology = visualizer::Topology::POINTS;
         object.material.color = color;
         object.material.lit = false;
         object.geometry.vertices.push_back(toRenderVertex(point));
@@ -65,22 +65,23 @@ private:
     prepareSegment(const geometry::polygon_t<3>& polygon,
                    const std::array<float, 4>& color) {
         const auto& points = polygon.points();
+
         std::size_t firstEndpoint = 0;
         std::size_t secondEndpoint = 0;
         double longestDistance = 0;
-        for (std::size_t first = 0; first < points.size(); ++first) {
+        for (std::size_t first = 0; first < points.size(); ++first) {  //FIXME опционально в отдельную функцию
             for (std::size_t second = first + 1; second < points.size(); ++second) {
                 const double distance = points[first].distance(points[second]);
                 if (distance > longestDistance) {
                     longestDistance = distance;
-                    firstEndpoint = first;
+                    firstEndpoint = first;  
                     secondEndpoint = second;
                 }
             }
         }
 
         visualizer::SceneObject object;
-        object.geometry.topology = visualizer::Topology::Lines;
+        object.geometry.topology = visualizer::Topology::LINES;
         object.material.color = color;
         object.material.lit = false;
         object.geometry.vertices = {toRenderVertex(points[firstEndpoint]),
@@ -109,7 +110,7 @@ private:
         }
 
         visualizer::SceneObject object;
-        object.geometry.topology = visualizer::Topology::Triangles;
+        object.geometry.topology = visualizer::Topology::TRIANGLES;
         object.material.color = color;
         object.material.lit = true;
         object.geometry.vertices.reserve(3);

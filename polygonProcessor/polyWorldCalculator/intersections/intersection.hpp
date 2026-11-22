@@ -6,7 +6,7 @@ namespace triangles {
 
 enum class RealTriangleForm { POINT, SEGMENT, TRIANGLE };
 
-bool doIntersect(const geometry::triangle_t<3>& first,
+bool doIntersect(const geometry::triangle_t<3>& first, //FIXME anonymous namespace
                  const geometry::triangle_t<3>& second);
 
 RealTriangleForm determineRealTriangleForm(const geometry::triangle_t<3>& triangle);

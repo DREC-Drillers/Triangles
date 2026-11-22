@@ -11,7 +11,7 @@
 
 namespace triangles {
 
-constexpr std::size_t MAX_POLYGON_VERTICES = 1'000'000;
+constexpr std::size_t MAX_POLYGON_VERTICES = 1'000'000;   //FIXME general foe project variable. Max-polygons not vertexes
 
 InitPolysData Parser::parse(const std::filesystem::path& path) const {
     lexer::Lexer input(generalFunctions::readFile(path), path);

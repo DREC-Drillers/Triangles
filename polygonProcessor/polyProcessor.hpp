@@ -24,7 +24,7 @@ public:
         return calculateIntersections(calculator);
     }
 
-    template <typename Calculator>
+    template <typename Calculator>   //FIXME убрать нахуй
     IntersectionData calculateIntersections(Calculator& calculator) const {
         return calculator.calculateIntersections(world_);
     }

@@ -10,13 +10,8 @@
 #include <utility>
 
 #include "cameraController/orbitCameraController.hpp"
-#if __has_include("core/backendFactory.hpp")
-#include "core/backendFactory.hpp"
-#include "core/visualizer.hpp"
-#else
-#include "backendFactory.hpp"
-#include "visualizer.hpp"
-#endif
+#include <core/backendFactory.hpp>
+#include <core/visualizer.hpp>
 #include "parser/parser.hpp"
 #include "polygonProcessor/polyProcessor.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
@@ -32,6 +27,8 @@ int main(int argc, char* argv[]) {
 
     try {
         using Clock = std::chrono::steady_clock;
+
+        //FIXME logical enters
 
         const auto start = Clock::now();
         const auto input =

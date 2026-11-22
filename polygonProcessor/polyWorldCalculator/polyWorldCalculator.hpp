@@ -10,7 +10,7 @@ namespace triangles {
 
 class PolyWorldCalculator {
 public:
-    IntersectionData calculateIntersections(const PolyWorld& world) const;
+    IntersectionData calculateIntersections(const PolyWorld& world) const;   //FIXME make static all methods 
     IntersectionData calculateIntersections(const PolyWorld&& world) const = delete;
 
 private:

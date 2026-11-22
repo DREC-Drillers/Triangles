@@ -24,7 +24,7 @@ bool doIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
     const auto firstForm = determineRealTriangleForm(first);
     const auto secondForm = determineRealTriangleForm(second);
 
-    if (firstForm == RealTriangleForm::POINT) {
+    if (firstForm == RealTriangleForm::POINT) {  //FIXME заменить например на вариант std::variant + std::visit 
         switch (secondForm) {
             case RealTriangleForm::POINT:
                 return doPointAndPointIntersect(first.a(), second.a());
@@ -69,7 +69,7 @@ RealTriangleForm determineRealTriangleForm(const triangle_t<3>& triangle) {
                                   : RealTriangleForm::TRIANGLE;
 }
 
-segment_t degenerateTriangleToSegment(const triangle_t<3>& triangle) {
+segment_t degenerateTriangleToSegment(const triangle_t<3>& triangle) { //FIXME geometry
     const std::array lengths{triangle.lenAB(), triangle.lenBC(), triangle.lenCA()};
     const std::size_t first =
         std::max_element(lengths.begin(), lengths.end()) - lengths.begin();

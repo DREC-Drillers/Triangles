@@ -17,7 +17,7 @@ enum class TrianglePosToPlane { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
 
 struct PlaneRelativeVertex {
     geometry::point_t<3> vertex;
-    double orient;
+    double orient;          // FIXME
 };
 
 struct PlaneRelativeTriangle {
@@ -175,7 +175,7 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     }
     if (firstPos.relation == TrianglePosToPlane::BELONGS &&
         secondPos.relation == TrianglePosToPlane::BELONGS) {
-        return areTrianglesIntersectOnPlane(first, second);
+        return areTrianglesIntersectOnPlane(first, second);  //FIXME do
     }
 
     canonicalizeTriangle(firstPos, secondPos);
