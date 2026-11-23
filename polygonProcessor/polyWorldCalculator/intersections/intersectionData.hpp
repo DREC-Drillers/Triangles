@@ -7,7 +7,7 @@
 namespace triangles {
 
 struct IntersectionData {
-    const PolyWorld& world;
+    const PolyWorld& world; //FIXME
     std::vector<const geometry::polygon_t<3>*> intersectingPolys;
     std::vector<const geometry::polygon_t<3>*> nonIntersectingPolys;
 };

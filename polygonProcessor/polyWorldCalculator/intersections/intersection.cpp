@@ -4,6 +4,9 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <functional>
+#include <stdexcept>
+#include <variant>
 
 #include "triangleIntersection.hpp"
 
@@ -18,47 +21,63 @@ namespace {
 
 constexpr double DISTANCE_EPSILON = 1e-9;
 
+using TriangleForm = std::variant<point_t<3>, segment_t,
+                                  std::reference_wrapper<const triangle_t<3>>>;
+
+TriangleForm toRealForm(const triangle_t<3>& triangle) {
+    switch (determineRealTriangleForm(triangle)) {
+        case RealTriangleForm::POINT:
+            return triangle.a();
+        case RealTriangleForm::SEGMENT:
+            return degenerateTriangleToSegment(triangle);
+        case RealTriangleForm::TRIANGLE:
+            return std::cref(triangle);
+    }
+    throw std::logic_error("Unknown triangle form");
+}
+
+struct Intersect {
+    bool operator()(const point_t<3>& first, const point_t<3>& second) const {
+        return doPointAndPointIntersect(first, second);
+    }
+
+    bool operator()(const point_t<3>& point, const segment_t& segment) const {
+        return doPointAndSegmentIntersect(point, segment);
+    }
+
+    bool operator()(const point_t<3>& point, const triangle_t<3>& triangle) const {
+        return doPointAndTriangleIntersect(point, triangle);
+    }
+
+    bool operator()(const segment_t& first, const segment_t& second) const {
+        return doSegmentAndSegmentIntersect(first, second);
+    }
+
+    bool operator()(const segment_t& segment, const triangle_t<3>& triangle) const {
+        return doSegmentAndTriangleIntersect(segment, triangle);
+    }
+
+    bool operator()(const triangle_t<3>& first, const triangle_t<3>& second) const {
+        return doTrianglesIntersect(first, second);
+    }
+
+    bool operator()(const segment_t& segment, const point_t<3>& point) const {
+        return (*this)(point, segment);
+    }
+
+    bool operator()(const triangle_t<3>& triangle, const point_t<3>& point) const {
+        return (*this)(point, triangle);
+    }
+
+    bool operator()(const triangle_t<3>& triangle, const segment_t& segment) const {
+        return (*this)(segment, triangle);
+    }
+};
+
 } // namespace
 
 bool doIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
-    const auto firstForm = determineRealTriangleForm(first);
-    const auto secondForm = determineRealTriangleForm(second);
-
-    if (firstForm == RealTriangleForm::POINT) {  //FIXME заменить например на вариант std::variant + std::visit 
-        switch (secondForm) {
-            case RealTriangleForm::POINT:
-                return doPointAndPointIntersect(first.a(), second.a());
-            case RealTriangleForm::SEGMENT:
-                return doPointAndSegmentIntersect(
-                    first.a(), degenerateTriangleToSegment(second));
-            case RealTriangleForm::TRIANGLE:
-                return doPointAndTriangleIntersect(first.a(), second);
-        }
-    }
-    if (firstForm == RealTriangleForm::SEGMENT) {
-        const auto firstSegment = degenerateTriangleToSegment(first);
-        switch (secondForm) {
-            case RealTriangleForm::POINT:
-                return doPointAndSegmentIntersect(second.a(), firstSegment);
-            case RealTriangleForm::SEGMENT:
-                return doSegmentAndSegmentIntersect(
-                    firstSegment, degenerateTriangleToSegment(second));
-            case RealTriangleForm::TRIANGLE:
-                return doSegmentAndTriangleIntersect(firstSegment, second);
-        }
-    }
-    if (firstForm == RealTriangleForm::TRIANGLE) {
-        switch (secondForm) {
-            case RealTriangleForm::POINT:
-                return doPointAndTriangleIntersect(second.a(), first);
-            case RealTriangleForm::SEGMENT:
-                return doSegmentAndTriangleIntersect(
-                    degenerateTriangleToSegment(second), first);
-            case RealTriangleForm::TRIANGLE:
-                return doTrianglesIntersect(first, second);
-        }
-    }
-    return false;
+    return std::visit(Intersect{}, toRealForm(first), toRealForm(second));
 }
 
 RealTriangleForm determineRealTriangleForm(const triangle_t<3>& triangle) {
