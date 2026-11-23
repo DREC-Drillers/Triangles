@@ -26,7 +26,7 @@ TEST(PolyWorldCalculator, RejectsSeparatedBoundsDespiteOrientationTolerance) {
                                           geometry::point_t<3>({1, 0, 1e-12}),
                                           geometry::point_t<3>({0, 1, 1e-12})}}});
 
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_TRUE(result.intersectingPolys.empty());
     EXPECT_EQ(result.nonIntersectingPolys.size(), 2U);
 }
@@ -63,7 +63,7 @@ TEST(PolyWorldCalculator, MatchesBruteForceForMultipleSpatialGroups) {
         }
     }
 
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     std::vector<const geometry::polygon_t<3>*> intersecting;
     std::vector<const geometry::polygon_t<3>*> nonIntersecting;
     for (std::size_t id = 0; id < polygons.size(); ++id) {
@@ -86,16 +86,15 @@ TEST(PolyWorld, PreservesPolygonVertices) {
 }
 
 TEST(PolyWorldCalculator, HandlesEmptyAndSingleTriangle) {
-    PolyWorldCalculator calculator;
     const PolyWorld empty(InitPolysData{});
-    const auto emptyResult = calculator.calculateIntersections(empty);
+    const auto emptyResult = PolyWorldCalculator::calculateIntersections(empty);
     EXPECT_EQ(&emptyResult.world, &empty);
     EXPECT_TRUE(emptyResult.intersectingPolys.empty());
     EXPECT_TRUE(emptyResult.nonIntersectingPolys.empty());
     const PolyWorld single(InitPolysData{{{geometry::point_t<3>({0, 0, 0}),
                                            geometry::point_t<3>({4, 0, 0}),
                                            geometry::point_t<3>({0, 4, 0})}}});
-    const auto singleResult = calculator.calculateIntersections(single);
+    const auto singleResult = PolyWorldCalculator::calculateIntersections(single);
     EXPECT_EQ(&singleResult.world, &single);
     EXPECT_TRUE(singleResult.intersectingPolys.empty());
     EXPECT_EQ(singleResult.nonIntersectingPolys,
@@ -113,7 +112,7 @@ TEST(PolyWorldCalculator, PartitionsPointersIntoOriginalWorld) {
                                           geometry::point_t<3>({11, 10, 0}),
                                           geometry::point_t<3>({10, 11, 0})}}});
     const auto* original = world.polys().data();
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_EQ(&result.world, &world);
     EXPECT_EQ(result.intersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[0].get(),
@@ -121,7 +120,7 @@ TEST(PolyWorldCalculator, PartitionsPointersIntoOriginalWorld) {
     EXPECT_EQ(result.nonIntersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[2].get()}));
     EXPECT_EQ(world.polys().data(), original);
-    const auto repeated = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto repeated = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_EQ(repeated.intersectingPolys, result.intersectingPolys);
     EXPECT_EQ(repeated.nonIntersectingPolys, result.nonIntersectingPolys);
 }
@@ -134,7 +133,7 @@ TEST(PolyWorldCalculator, ReportsEachIntersectingPolygonOnce) {
                               geometry::point_t<3>({0, 4, 0})});
     }
     const PolyWorld world(input);
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_TRUE(result.nonIntersectingPolys.empty());
     ASSERT_EQ(result.intersectingPolys.size(), world.polys().size());
     for (std::size_t i = 0; i < world.polys().size(); ++i) {
@@ -148,7 +147,7 @@ TEST(PolyWorldCalculator, RejectsUnsupportedPolygonIncludingLastElement) {
                           geometry::point_t<3>({1, 1, 0}),
                           geometry::point_t<3>({0, 1, 0})}}};
     const PolyWorld quad(input);
-    EXPECT_THROW(PolyWorldCalculator{}.calculateIntersections(quad),
+    EXPECT_THROW(PolyWorldCalculator::calculateIntersections(quad),
                  std::invalid_argument);
 
     input.data.insert(input.data.begin(),
@@ -156,7 +155,7 @@ TEST(PolyWorldCalculator, RejectsUnsupportedPolygonIncludingLastElement) {
                        geometry::point_t<3>({4, 0, 0}),
                        geometry::point_t<3>({0, 4, 0})});
     const PolyWorld mixed(input);
-    EXPECT_THROW(PolyWorldCalculator{}.calculateIntersections(mixed),
+    EXPECT_THROW(PolyWorldCalculator::calculateIntersections(mixed),
                  std::invalid_argument);
 }
 
@@ -167,7 +166,7 @@ TEST(PolyWorldCalculator, HandlesDisjointCoplanarTriangles) {
                                          {geometry::point_t<3>({2, 2, 0}),
                                           geometry::point_t<3>({3, 2, 0}),
                                           geometry::point_t<3>({2, 3, 0})}}});
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_TRUE(result.intersectingPolys.empty());
     EXPECT_EQ(result.nonIntersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[0].get(),
@@ -181,7 +180,7 @@ TEST(PolyWorldCalculator, HandlesTrianglesOnParallelPlanes) {
                                          {geometry::point_t<3>({0, 0, 1}),
                                           geometry::point_t<3>({4, 0, 1}),
                                           geometry::point_t<3>({0, 4, 1})}}});
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_TRUE(result.intersectingPolys.empty());
     EXPECT_EQ(result.nonIntersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[0].get(),
@@ -210,7 +209,7 @@ TEST(PolyWorldCalculator, PartitionsInterleavedIndependentGroupsInInputOrder) {
                                          {geometry::point_t<3>({30, 0, 0}),
                                           geometry::point_t<3>({31, 0, 0}),
                                           geometry::point_t<3>({30, 1, 0})}}});
-    const auto result = PolyWorldCalculator{}.calculateIntersections(world);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
     EXPECT_EQ(&result.world, &world);
     EXPECT_EQ(result.intersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[1].get(),
@@ -239,9 +238,8 @@ TEST(PolyWorldCalculator, ChecksIntersectingPolygons) {
                                           geometry::point_t<3>({1, 1, 1}),
                                           geometry::point_t<3>({2, 1, 1})}}});
 
-    EXPECT_EQ(
-        PolyWorldCalculator{}.calculateIntersections(world).intersectingPolys.size(),
-        2U);
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
+    EXPECT_EQ(result.intersectingPolys.size(), 2U);
 }
 
 TEST(PolyWorldCalculator, ChecksDisjointPolygons) {
@@ -252,9 +250,8 @@ TEST(PolyWorldCalculator, ChecksDisjointPolygons) {
                                           geometry::point_t<3>({3, 2, 0}),
                                           geometry::point_t<3>({2, 3, 0})}}});
 
-    EXPECT_TRUE(PolyWorldCalculator{}
-                    .calculateIntersections(world)
-                    .intersectingPolys.empty());
+    const auto result = PolyWorldCalculator::calculateIntersections(world);
+    EXPECT_TRUE(result.intersectingPolys.empty());
 }
 
 TEST(PolyWorldCalculator, RejectsUnsupportedPolygonInEitherPosition) {
@@ -266,7 +263,7 @@ TEST(PolyWorldCalculator, RejectsUnsupportedPolygonInEitherPosition) {
                                           geometry::point_t<3>({1, 1, 0}),
                                           geometry::point_t<3>({0, 1, 0})}}});
 
-    EXPECT_THROW(PolyWorldCalculator{}.calculateIntersections(world),
+    EXPECT_THROW(PolyWorldCalculator::calculateIntersections(world),
                  std::invalid_argument);
     const PolyWorld reversed(InitPolysData{{{geometry::point_t<3>({0, 0, 0}),
                                              geometry::point_t<3>({1, 0, 0}),
@@ -275,7 +272,7 @@ TEST(PolyWorldCalculator, RejectsUnsupportedPolygonInEitherPosition) {
                                             {geometry::point_t<3>({0, 0, 0}),
                                              geometry::point_t<3>({1, 0, 0}),
                                              geometry::point_t<3>({0, 1, 0})}}});
-    EXPECT_THROW(PolyWorldCalculator{}.calculateIntersections(reversed),
+    EXPECT_THROW(PolyWorldCalculator::calculateIntersections(reversed),
                  std::invalid_argument);
 }
 
@@ -309,7 +306,7 @@ TEST(PolyWorld, MovingPreservesOwnedPolygonAddresses) {
     const auto* polygon = source.polys()[0].get();
     const PolyWorld destination(std::move(source));
     EXPECT_EQ(destination.polys()[0].get(), polygon);
-    const auto result = PolyWorldCalculator{}.calculateIntersections(destination);
+    const auto result = PolyWorldCalculator::calculateIntersections(destination);
     ASSERT_EQ(result.nonIntersectingPolys.size(), 1U);
     EXPECT_EQ(result.nonIntersectingPolys[0], polygon);
 }
