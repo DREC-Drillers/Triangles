@@ -21,64 +21,7 @@ namespace {
 
 constexpr double DISTANCE_EPSILON = 1e-9;
 
-using TriangleForm = std::variant<point_t<3>, segment_t,
-                                  std::reference_wrapper<const triangle_t<3>>>;
-
-TriangleForm toRealForm(const triangle_t<3>& triangle) {
-    switch (determineRealTriangleForm(triangle)) {
-        case RealTriangleForm::POINT:
-            return triangle.a();
-        case RealTriangleForm::SEGMENT:
-            return degenerateTriangleToSegment(triangle);
-        case RealTriangleForm::TRIANGLE:
-            return std::cref(triangle);
-    }
-    throw std::logic_error("Unknown triangle form");
-}
-
-struct Intersect {
-    bool operator()(const point_t<3>& first, const point_t<3>& second) const {
-        return doPointAndPointIntersect(first, second);
-    }
-
-    bool operator()(const point_t<3>& point, const segment_t& segment) const {
-        return doPointAndSegmentIntersect(point, segment);
-    }
-
-    bool operator()(const point_t<3>& point, const triangle_t<3>& triangle) const {
-        return doPointAndTriangleIntersect(point, triangle);
-    }
-
-    bool operator()(const segment_t& first, const segment_t& second) const {
-        return doSegmentAndSegmentIntersect(first, second);
-    }
-
-    bool operator()(const segment_t& segment, const triangle_t<3>& triangle) const {
-        return doSegmentAndTriangleIntersect(segment, triangle);
-    }
-
-    bool operator()(const triangle_t<3>& first, const triangle_t<3>& second) const {
-        return doTrianglesIntersect(first, second);
-    }
-
-    bool operator()(const segment_t& segment, const point_t<3>& point) const {
-        return (*this)(point, segment);
-    }
-
-    bool operator()(const triangle_t<3>& triangle, const point_t<3>& point) const {
-        return (*this)(point, triangle);
-    }
-
-    bool operator()(const triangle_t<3>& triangle, const segment_t& segment) const {
-        return (*this)(segment, triangle);
-    }
-};
-
-} // namespace
-
-bool doIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
-    return std::visit(Intersect{}, toRealForm(first), toRealForm(second));
-}
+enum class RealTriangleForm { POINT, SEGMENT, TRIANGLE };
 
 RealTriangleForm determineRealTriangleForm(const triangle_t<3>& triangle) {
     if (triangle.a() == triangle.b() && triangle.b() == triangle.c()) {
@@ -219,6 +162,65 @@ bool doSegmentAndTriangleIntersect(const segment_t& segment,
     const auto intersection =
         getSegAndTrianglePlaneIntersectPoint(segment, triangle);
     return doPointAndTriangleIntersect(intersection, triangle);
+}
+
+using TriangleForm = std::variant<point_t<3>, segment_t,
+                                  std::reference_wrapper<const triangle_t<3>>>;
+
+TriangleForm toRealForm(const triangle_t<3>& triangle) {
+    switch (determineRealTriangleForm(triangle)) {
+        case RealTriangleForm::POINT:
+            return triangle.a();
+        case RealTriangleForm::SEGMENT:
+            return degenerateTriangleToSegment(triangle);
+        case RealTriangleForm::TRIANGLE:
+            return std::cref(triangle);
+    }
+    throw std::logic_error("Unknown triangle form");
+}
+
+struct Intersect {
+    bool operator()(const point_t<3>& first, const point_t<3>& second) const {
+        return doPointAndPointIntersect(first, second);
+    }
+
+    bool operator()(const point_t<3>& point, const segment_t& segment) const {
+        return doPointAndSegmentIntersect(point, segment);
+    }
+
+    bool operator()(const point_t<3>& point, const triangle_t<3>& triangle) const {
+        return doPointAndTriangleIntersect(point, triangle);
+    }
+
+    bool operator()(const segment_t& first, const segment_t& second) const {
+        return doSegmentAndSegmentIntersect(first, second);
+    }
+
+    bool operator()(const segment_t& segment, const triangle_t<3>& triangle) const {
+        return doSegmentAndTriangleIntersect(segment, triangle);
+    }
+
+    bool operator()(const triangle_t<3>& first, const triangle_t<3>& second) const {
+        return doTrianglesIntersect(first, second);
+    }
+
+    bool operator()(const segment_t& segment, const point_t<3>& point) const {
+        return (*this)(point, segment);
+    }
+
+    bool operator()(const triangle_t<3>& triangle, const point_t<3>& point) const {
+        return (*this)(point, triangle);
+    }
+
+    bool operator()(const triangle_t<3>& triangle, const segment_t& segment) const {
+        return (*this)(segment, triangle);
+    }
+};
+
+} // namespace
+
+bool doIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
+    return std::visit(Intersect{}, toRealForm(first), toRealForm(second));
 }
 
 } // namespace triangles
