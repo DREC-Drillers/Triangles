@@ -34,8 +34,8 @@ public:
     PolyWorld(const PolyWorld&) = delete;
     PolyWorld& operator=(const PolyWorld&) = delete;
 
-    PolyWorld(PolyWorld&&) noexcept = default;  //FIXME убрать noexcept 
-    PolyWorld& operator=(PolyWorld&&) noexcept = default;
+    PolyWorld(PolyWorld&&) = default;
+    PolyWorld& operator=(PolyWorld&&) = default;
 
     const std::vector<std::unique_ptr<geometry::polygon_t<3>>>& polys() const {
         return polys_;
