@@ -11,8 +11,11 @@
 namespace triangles {
 
 struct RenderStyle {
-    std::array<float, 4> polyColor{0.7f, 0.7f, 0.7f, 1.0f};  //FIXME в settings задание цвета
-    std::array<float, 4> intersectingPolyColor{1.0f, 0.0f, 0.0f, 1.0f};
+    static constexpr std::array<float, 4> kGrayRgba{0.7f, 0.7f, 0.7f, 1.0f};
+    static constexpr std::array<float, 4> kRedRgba{1.0f, 0.0f, 0.0f, 1.0f};
+    //FIXME придумал такую тему 
+    std::array<float, 4> polyColor = kGrayRgba;
+    std::array<float, 4> intersectingPolyColor = kRedRgba;
 };
 
 class RenderDataPreparer {
