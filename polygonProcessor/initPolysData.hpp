@@ -3,7 +3,7 @@
 #include <vector>
 
 import geometry;
-//FIXME подумать над созданием общего файла конфиг/settings
+
 namespace triangles {
 
 struct InitPolysData {

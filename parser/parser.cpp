@@ -1,17 +1,15 @@
 #include "parser.hpp"
 
 #include <array>
-#include <cstdint>
 #include <string>
 #include <utility>
 
 #include "file.h"
 #include "lexer/lexer.h"
 #include "lexer/token_stream.h"
+#include "settings.hpp"
 
 namespace triangles {
-
-constexpr std::size_t MAX_NUM_OF_POLYGONS = 1'000'000;   //FIXME general foe project variable. Max-polygons not vertexes
 
 InitPolysData Parser::parse(const std::filesystem::path& path) const {
     lexer::Lexer input(generalFunctions::readFile(path), path);
@@ -32,9 +30,10 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
         const lexer::Token& countToken = tokens.peekToken();
         const auto count =
             tokens.expectInt("Expected an integer vertex count" + polygonContext);
-        if (count < 3 || count >= static_cast<std::int64_t>(MAX_NUM_OF_POLYGONS)) {
+        if (count < 3 || count >= settings::kVertexCountUpperBound) {
             tokens.failAtToken(countToken,
-                               "Vertex count must be 3 <= M < 1000000" +
+                               "Vertex count must be 3 <= M < " +
+                                   std::to_string(settings::kVertexCountUpperBound) +
                                    polygonContext);
         }
 

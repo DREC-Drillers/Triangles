@@ -13,7 +13,7 @@ namespace triangles {
 
 class PolyWorld {
 private:
-    std::vector<std::unique_ptr<geometry::polygon_t<3>>> polys_;   //FIXME 3 magicNumber в settings
+    std::vector<std::unique_ptr<geometry::polygon_t<3>>> polys_;
 
 public:
     explicit PolyWorld(const InitPolysData& initData) {

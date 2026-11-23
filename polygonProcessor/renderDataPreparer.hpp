@@ -7,16 +7,9 @@
 
 #include "polygonProcessor/polyWorldCalculator/intersections/intersectionData.hpp"
 #include "scene/sceneObject.hpp"
+#include "settings.hpp"
 
 namespace triangles {
-
-struct RenderStyle {
-    static constexpr std::array<float, 4> kGrayRgba{0.7f, 0.7f, 0.7f, 1.0f};
-    static constexpr std::array<float, 4> kRedRgba{1.0f, 0.0f, 0.0f, 1.0f};
-    //FIXME придумал такую тему 
-    std::array<float, 4> polyColor = kGrayRgba;
-    std::array<float, 4> intersectingPolyColor = kRedRgba;
-};
 
 class RenderDataPreparer {
 public:
