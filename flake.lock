@@ -25,11 +25,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795444754,
-        "narHash": "sha256-8N8uDc0dL3UretIfqsMaRmXKElht5GamKRSu/VuvaB4=",
+        "lastModified": 1795461011,
+        "narHash": "sha256-fwRhF6Sv7qaGuzrr1IAU3s0s0zP2dbN8XYpEYyd6Xuk=",
         "ref": "main",
-        "rev": "7c016d13b71c1bba481431236b09ecc17ae75cfe",
-        "revCount": 112,
+        "rev": "be03f0b79035006c6205b6b315d61a64e5fb6805",
+        "revCount": 116,
         "type": "git",
         "url": "https://github.com/DREC-Drillers/generalFunctions.git"
       },
