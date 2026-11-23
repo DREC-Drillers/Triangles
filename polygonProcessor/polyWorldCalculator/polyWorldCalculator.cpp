@@ -1,12 +1,11 @@
-#include "polyWorldCalculator.hpp"
-
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
+#include "spatial/bvh.hpp"
+#include "polyWorldCalculator.hpp"
 #include "intersections/intersection.hpp"
-#include "spetial/bvh.hpp"
 
 namespace triangles {
 
