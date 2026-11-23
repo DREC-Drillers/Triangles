@@ -8,6 +8,7 @@
 #include "polygonProcessor/polyWorldCalculator/intersections/intersectionData.hpp"
 #include "scene/sceneObject.hpp"
 #include "settings.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
 
@@ -21,7 +22,8 @@ public:
                         intersections.intersectingPolys.size());
 
         const auto append =
-            [&](const std::vector<const geometry::polygon_t<3>*>& polygons,
+            [&](const std::vector<const geometry::polygon_t<geometry::defaultDim>*>&
+                    polygons,
                 const std::array<float, 4>& color) {
                 for (const auto* polygon : polygons) {
                     if (polygon == nullptr) {
@@ -39,16 +41,17 @@ public:
 
 private:
     static visualizer::Vertex
-    toRenderVertex(const geometry::point_t<3>& point,
-                   const std::array<float, 3>& normal = {}) {
+    toRenderVertex(const geometry::point_t<geometry::defaultDim>& point,
+                   const std::array<float, geometry::defaultDim>& normal = {}) {
         return {{static_cast<float>(point.x()),
                  static_cast<float>(point.y()),
                  static_cast<float>(point.z())},
                 normal};
     }
 
-    static visualizer::SceneObject preparePoint(const geometry::point_t<3>& point,
-                                                const std::array<float, 4>& color) {
+    static visualizer::SceneObject
+    preparePoint(const geometry::point_t<geometry::defaultDim>& point,
+                 const std::array<float, 4>& color) {
         visualizer::SceneObject object;
         object.geometry.topology = visualizer::Topology::Points;
         object.material.color = color;
@@ -58,7 +61,7 @@ private:
     }
 
     static visualizer::SceneObject
-    prepareSegment(const geometry::polygon_t<3>& polygon,
+    prepareSegment(const geometry::polygon_t<geometry::defaultDim>& polygon,
                    const std::array<float, 4>& color) {
         const auto segment = polygon.maxEdge().value();
 
@@ -72,7 +75,7 @@ private:
     }
 
     static visualizer::SceneObject
-    prepareTriangle(const geometry::polygon_t<3>& polygon,
+    prepareTriangle(const geometry::polygon_t<geometry::defaultDim>& polygon,
                     const std::array<float, 4>& color) {
         const auto& points = polygon.points();
         if (points.size() != 3) {
@@ -98,9 +101,10 @@ private:
         object.geometry.vertices.reserve(3);
 
         const auto n = polygon.unitNormal();
-        const std::array<float, 3> normal{static_cast<float>(n.x()),
-                                          static_cast<float>(n.y()),
-                                          static_cast<float>(n.z())};
+        const std::array<float, geometry::defaultDim> normal{
+            static_cast<float>(n.x()),
+            static_cast<float>(n.y()),
+            static_cast<float>(n.z())};
 
         for (const auto& point : points) {
             object.geometry.vertices.push_back(toRenderVertex(point, normal));

@@ -8,6 +8,7 @@
 #include "lexer/lexer.h"
 #include "lexer/token_stream.h"
 #include "settings.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
 
@@ -47,7 +48,7 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
             const double x = tokens.expectDouble("Expected x coordinate" + context);
             const double y = tokens.expectDouble("Expected y coordinate" + context);
             const double z = tokens.expectDouble("Expected z coordinate" + context);
-            vertices.emplace_back(std::array<double, 3>{x, y, z});
+            vertices.emplace_back(std::array<double, geometry::defaultDim>{x, y, z});
         }
         result.data.push_back(std::move(vertices));
     }
