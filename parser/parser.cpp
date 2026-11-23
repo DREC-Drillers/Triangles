@@ -11,7 +11,7 @@
 
 namespace triangles {
 
-constexpr std::size_t MAX_POLYGON_VERTICES = 1'000'000;   //FIXME general foe project variable. Max-polygons not vertexes
+constexpr std::size_t MAX_NUM_OF_POLYGONS = 1'000'000;   //FIXME general foe project variable. Max-polygons not vertexes
 
 InitPolysData Parser::parse(const std::filesystem::path& path) const {
     lexer::Lexer input(generalFunctions::readFile(path), path);
@@ -32,7 +32,7 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
         const lexer::Token& countToken = tokens.peekToken();
         const auto count =
             tokens.expectInt("Expected an integer vertex count" + polygonContext);
-        if (count < 3 || count >= static_cast<std::int64_t>(MAX_POLYGON_VERTICES)) {
+        if (count < 3 || count >= static_cast<std::int64_t>(MAX_NUM_OF_POLYGONS)) {
             tokens.failAtToken(countToken,
                                "Vertex count must be 3 <= M < 1000000" +
                                    polygonContext);
