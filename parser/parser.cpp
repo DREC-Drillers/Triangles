@@ -1,17 +1,16 @@
 #include "parser.hpp"
 
 #include <array>
-#include <cstdint>
 #include <string>
 #include <utility>
 
 #include "file.h"
 #include "lexer/lexer.h"
 #include "lexer/token_stream.h"
+#include "settings.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
-
-constexpr std::size_t MAX_POLYGON_VERTICES = 1'000'000;
 
 InitPolysData Parser::parse(const std::filesystem::path& path) const {
     lexer::Lexer input(generalFunctions::readFile(path), path);
@@ -32,9 +31,10 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
         const lexer::Token& countToken = tokens.peekToken();
         const auto count =
             tokens.expectInt("Expected an integer vertex count" + polygonContext);
-        if (count < 3 || count >= static_cast<std::int64_t>(MAX_POLYGON_VERTICES)) {
+        if (count < 3 || count >= settings::kVertexCountUpperBound) {
             tokens.failAtToken(countToken,
-                               "Vertex count must be 3 <= M < 1000000" +
+                               "Vertex count must be 3 <= M < " +
+                                   std::to_string(settings::kVertexCountUpperBound) +
                                    polygonContext);
         }
 
@@ -48,7 +48,7 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
             const double x = tokens.expectDouble("Expected x coordinate" + context);
             const double y = tokens.expectDouble("Expected y coordinate" + context);
             const double z = tokens.expectDouble("Expected z coordinate" + context);
-            vertices.emplace_back(std::array<double, 3>{x, y, z});
+            vertices.emplace_back(std::array<double, geometry::defaultDim>{x, y, z});
         }
         result.data.push_back(std::move(vertices));
     }

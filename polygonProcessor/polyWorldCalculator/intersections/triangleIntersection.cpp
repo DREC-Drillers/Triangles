@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <utility>
 
+#include "spatial/geometry/geomConst.hpp"
+
 namespace triangles {
 
 namespace {
@@ -16,8 +18,8 @@ using geometry::triangle_t;
 enum class TrianglePosToPlane { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
 
 struct PlaneRelativeVertex {
-    geometry::point_t<3> vertex;
-    double orient;
+    geometry::point_t<geometry::defaultDim> vertex;
+    double signedDistanceToPlane;
 };
 
 struct PlaneRelativeTriangle {
@@ -62,11 +64,11 @@ bool triangleHasEdgeSeparatingFromOther(const triangle_t<2>& curTriangle,
     return false;
 }
 
-bool areTrianglesIntersectOnPlane(const triangle_t<3>& first,
-                                  const triangle_t<3>& second) {
+bool doTrianglesIntersectOnPlane(const triangle_t<geometry::defaultDim>& first,
+                                 const triangle_t<geometry::defaultDim>& second) {
     const auto normal = first.unitNormal();
 
-    const std::array<double, 3> normalComponents{
+    const std::array<double, geometry::defaultDim> normalComponents{
         std::abs(normal.x()), std::abs(normal.y()), std::abs(normal.z())};
     const std::size_t droppedAxis =
         std::max_element(normalComponents.begin(), normalComponents.end()) -
@@ -85,9 +87,12 @@ bool areTrianglesIntersectOnPlane(const triangle_t<3>& first,
 }
 
 std::size_t findIsolatedVertexIndex(const PlaneRelativeTriangle& curTriangle) {
-    const int aVertOrientToNorm = -orientationSign(curTriangle.vertices[0].orient);
-    const int bVertOrientToNorm = -orientationSign(curTriangle.vertices[1].orient);
-    const int cVertOrientToNorm = -orientationSign(curTriangle.vertices[2].orient);
+    const int aVertOrientToNorm =
+        -orientationSign(curTriangle.vertices[0].signedDistanceToPlane);
+    const int bVertOrientToNorm =
+        -orientationSign(curTriangle.vertices[1].signedDistanceToPlane);
+    const int cVertOrientToNorm =
+        -orientationSign(curTriangle.vertices[2].signedDistanceToPlane);
 
     std::size_t isolatedVertIdx = 0;
     if (aVertOrientToNorm != 0) {
@@ -113,20 +118,22 @@ void canonicalizeTriangle(PlaneRelativeTriangle& curTriangle,
                 curTriangle.vertices.begin() + isolatedVertIdx,
                 curTriangle.vertices.end());
 
-    const int firstSign = -orientationSign(curTriangle.vertices[0].orient);
-    const int secondSign = -orientationSign(curTriangle.vertices[1].orient);
+    const int firstSign =
+        -orientationSign(curTriangle.vertices[0].signedDistanceToPlane);
+    const int secondSign =
+        -orientationSign(curTriangle.vertices[1].signedDistanceToPlane);
 
     if (firstSign < 0 || (firstSign == 0 && secondSign > 0)) {
         std::swap(planeTriangle.vertices[1], planeTriangle.vertices[2]);
         for (auto& vertex : curTriangle.vertices) {
-            vertex.orient = -vertex.orient;
+            vertex.signedDistanceToPlane = -vertex.signedDistanceToPlane;
         }
     }
 }
 
-PlaneRelativeTriangle
-getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
-                                const triangle_t<3>& planeTriangle) {
+PlaneRelativeTriangle getTrianglePosToPlaneOfTriangle(
+    const triangle_t<geometry::defaultDim>& curTriangle,
+    const triangle_t<geometry::defaultDim>& planeTriangle) {
     const double firstVertexOrient = curTriangle.a().signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
     const double secondVertexOrient = curTriangle.b().signedDistanceToPlane(
@@ -164,7 +171,8 @@ getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
 
 } // namespace
 
-bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
+bool doTrianglesIntersect(const triangle_t<geometry::defaultDim>& first,
+                          const triangle_t<geometry::defaultDim>& second) {
     auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
     if (firstPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
         return false;
@@ -175,7 +183,7 @@ bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& secon
     }
     if (firstPos.relation == TrianglePosToPlane::BELONGS &&
         secondPos.relation == TrianglePosToPlane::BELONGS) {
-        return areTrianglesIntersectOnPlane(first, second);
+        return doTrianglesIntersectOnPlane(first, second);
     }
 
     canonicalizeTriangle(firstPos, secondPos);

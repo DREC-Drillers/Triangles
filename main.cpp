@@ -1,4 +1,6 @@
 #include <chrono>
+#include <core/backendFactory.hpp>
+#include <core/visualizer.hpp>
 #include <cstddef>
 #include <exception>
 #include <filesystem>
@@ -10,16 +12,10 @@
 #include <utility>
 
 #include "cameraController/orbitCameraController.hpp"
-#if __has_include("core/backendFactory.hpp")
-#include "core/backendFactory.hpp"
-#include "core/visualizer.hpp"
-#else
-#include "backendFactory.hpp"
-#include "visualizer.hpp"
-#endif
 #include "parser/parser.hpp"
 #include "polygonProcessor/polyProcessor.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 int main(int argc, char* argv[]) {
     const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
@@ -32,19 +28,22 @@ int main(int argc, char* argv[]) {
 
     try {
         using Clock = std::chrono::steady_clock;
-
         const auto start = Clock::now();
+
         const auto input =
             triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
         const auto parsed = Clock::now();
+
         const triangles::PolyWorld world(input);
         const auto worldCreated = Clock::now();
+
         const triangles::PolyProcessor processor(world);
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
 
-        const std::unordered_set<const geometry::polygon_t<3>*> intersecting(
-            result.intersectingPolys.begin(), result.intersectingPolys.end());
+        const std::unordered_set<const geometry::polygon_t<geometry::defaultDim>*>
+            intersecting(result.intersectingPolys.begin(),
+                         result.intersectingPolys.end());
         for (std::size_t index = 0; index < world.polys().size(); ++index) {
             if (intersecting.contains(world.polys()[index].get())) {
                 std::cout << index << '\n';
@@ -53,7 +52,7 @@ int main(int argc, char* argv[]) {
         std::cout.flush();
 
         visualizer::Scene scene;
-        for (auto& object : triangles::RenderDataPreparer{}.prepare(result)) {
+        for (auto& object : triangles::RenderDataPreparer::prepare(result)) {
             scene.addObject(std::move(object));
         }
         const auto scenePrepared = Clock::now();

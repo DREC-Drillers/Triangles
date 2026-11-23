@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "initPolysData.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 import geometry;
 
@@ -13,7 +14,7 @@ namespace triangles {
 
 class PolyWorld {
 private:
-    std::vector<std::unique_ptr<geometry::polygon_t<3>>> polys_;
+    std::vector<std::unique_ptr<geometry::polygon_t<geometry::defaultDim>>> polys_;
 
 public:
     explicit PolyWorld(const InitPolysData& initData) {
@@ -21,10 +22,13 @@ public:
 
         for (const auto& vertices : initData.data) {
             if (vertices.size() == 3) {
-                polys_.push_back(std::make_unique<geometry::triangle_t<3>>(
-                    vertices[0], vertices[1], vertices[2]));
+                polys_.push_back(
+                    std::make_unique<geometry::triangle_t<geometry::defaultDim>>(
+                        vertices[0], vertices[1], vertices[2]));
             } else {
-                polys_.push_back(std::make_unique<geometry::polygon_t<3>>(vertices));
+                polys_.push_back(
+                    std::make_unique<geometry::polygon_t<geometry::defaultDim>>(
+                        vertices));
             }
         }
     }
@@ -34,10 +38,11 @@ public:
     PolyWorld(const PolyWorld&) = delete;
     PolyWorld& operator=(const PolyWorld&) = delete;
 
-    PolyWorld(PolyWorld&&) noexcept = default;
-    PolyWorld& operator=(PolyWorld&&) noexcept = default;
+    PolyWorld(PolyWorld&&) = default;
+    PolyWorld& operator=(PolyWorld&&) = default;
 
-    const std::vector<std::unique_ptr<geometry::polygon_t<3>>>& polys() const {
+    const std::vector<std::unique_ptr<geometry::polygon_t<geometry::defaultDim>>>&
+    polys() const {
         return polys_;
     }
 };
