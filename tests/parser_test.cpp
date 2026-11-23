@@ -8,11 +8,12 @@
 
 #include "lexer/lexer.h"
 #include "parser/parser.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 namespace {
 
 static_assert(std::is_same_v<triangles::InitPolysData::PolygonPoints::value_type,
-                             geometry::point_t<3>>);
+                             geometry::point_t<geometry::defaultDim>>);
 
 triangles::InitPolysData parse(const std::string& source) {
     auto tokens = lexer::Lexer(source, "scene.txt").tokenize();

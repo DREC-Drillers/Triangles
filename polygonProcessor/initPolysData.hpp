@@ -2,12 +2,14 @@
 
 #include <vector>
 
+#include "spatial/geometry/geomConst.hpp"
+
 import geometry;
-//FIXME подумать над созданием общего файла конфиг/settings
+
 namespace triangles {
 
 struct InitPolysData {
-    using PolygonPoints = std::vector<geometry::point_t<3>>;
+    using PolygonPoints = std::vector<geometry::point_t<geometry::defaultDim>>;
 
     std::vector<PolygonPoints> data;
 };

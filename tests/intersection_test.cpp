@@ -6,10 +6,11 @@
 #include <gtest/gtest.h>
 
 #include "polygonProcessor/polyWorldCalculator/intersections/intersection.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 namespace {
 
-using Coordinates = std::array<double, 3>;
+using Coordinates = std::array<double, geometry::defaultDim>;
 using Vertices = std::array<Coordinates, 3>;
 
 constexpr Vertices point(Coordinates coordinates) {
@@ -41,11 +42,12 @@ TEST_P(TriangleFormIntersection, IsIndependentOfVertexOrderAndProjectionAxis) {
     constexpr std::array<std::array<std::size_t, 3>, 6> VERTEX_ORDERS{
         {{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0}}};
 
-    for (std::size_t axis = 0; axis < 3; ++axis) {
+    for (std::size_t axis = 0; axis < geometry::defaultDim; ++axis) {
         const auto transform = [axis](const Coordinates& coordinates) {
-            return geometry::point_t<3>({coordinates[axis],
-                                         coordinates[(axis + 1) % 3],
-                                         coordinates[(axis + 2) % 3]});
+            return geometry::point_t<geometry::defaultDim>(
+                {coordinates[axis],
+                 coordinates[(axis + 1) % geometry::defaultDim],
+                 coordinates[(axis + 2) % geometry::defaultDim]});
         };
         for (const auto& firstOrder : VERTEX_ORDERS) {
             for (const auto& secondOrder : VERTEX_ORDERS) {
@@ -53,11 +55,11 @@ TEST_P(TriangleFormIntersection, IsIndependentOfVertexOrderAndProjectionAxis) {
                              << "axis=" << axis << " first=" << firstOrder[0]
                              << firstOrder[1] << firstOrder[2] << " second="
                              << secondOrder[0] << secondOrder[1] << secondOrder[2]);
-                const geometry::triangle_t<3> first(
+                const geometry::triangle_t<geometry::defaultDim> first(
                     transform(testCase.first[firstOrder[0]]),
                     transform(testCase.first[firstOrder[1]]),
                     transform(testCase.first[firstOrder[2]]));
-                const geometry::triangle_t<3> second(
+                const geometry::triangle_t<geometry::defaultDim> second(
                     transform(testCase.second[secondOrder[0]]),
                     transform(testCase.second[secondOrder[1]]),
                     transform(testCase.second[secondOrder[2]]));
