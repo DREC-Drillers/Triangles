@@ -1,7 +1,5 @@
 #include "intersection.hpp"
 
-#include <algorithm>
-#include <array>
 #include <cmath>
 #include <cstddef>
 #include <functional>
@@ -29,13 +27,6 @@ RealTriangleForm determineRealTriangleForm(const triangle_t<3>& triangle) {
     }
     return triangle.area() == 0.0 ? RealTriangleForm::SEGMENT
                                   : RealTriangleForm::TRIANGLE;
-}
-
-segment_t degenerateTriangleToSegment(const triangle_t<3>& triangle) { //FIXME geometry
-    const std::array lengths{triangle.lenAB(), triangle.lenBC(), triangle.lenCA()};
-    const std::size_t first =
-        std::max_element(lengths.begin(), lengths.end()) - lengths.begin();
-    return segment_t(triangle.point(first), triangle.point((first + 1) % 3));
 }
 
 bool pointLiesInTrianglePlain(const point_t<3>& point,
@@ -172,7 +163,7 @@ TriangleForm toRealForm(const triangle_t<3>& triangle) {
         case RealTriangleForm::POINT:
             return triangle.a();
         case RealTriangleForm::SEGMENT:
-            return degenerateTriangleToSegment(triangle);
+            return triangle.maxEdge().value();
         case RealTriangleForm::TRIANGLE:
             return std::cref(triangle);
     }
