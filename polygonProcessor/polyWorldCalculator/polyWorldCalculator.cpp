@@ -1,5 +1,3 @@
-#include "spatial/bvh.hpp"
-
 #include "polyWorldCalculator.hpp"
 
 #include <cstddef>
@@ -8,6 +6,7 @@
 #include <vector>
 
 #include "intersections/intersection.hpp"
+#include "spatial/bvh.hpp"
 #include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
@@ -26,8 +25,7 @@ asTriangle(const geometry::polygon_t<geometry::defaultDim>& polygon) {
     return static_cast<const geometry::triangle_t<geometry::defaultDim>&>(polygon);
 }
 
-Bvh
-prepareBvh(const PolyWorld& world) {
+Bvh prepareBvh(const PolyWorld& world) {
     std::vector<axisAlignedBoundingBox_t> bounds;
     bounds.reserve(world.polys().size());
     for (const auto& polygon : world.polys()) {
@@ -37,7 +35,6 @@ prepareBvh(const PolyWorld& world) {
 }
 
 } // namespace
-
 
 IntersectionData
 PolyWorldCalculator::calculateIntersections(const PolyWorld& world) {

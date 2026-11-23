@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
         const triangles::PolyWorld world(input);
         const auto worldCreated = Clock::now();
-        
+
         const triangles::PolyProcessor processor(world);
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
