@@ -1,8 +1,3 @@
-// clang-format off
-// Include BVH before geometry is imported to avoid a Clang/libstdc++ module conflict.
-#include "spatial/bvh.hpp"
-// clang-format on
-
 #include "polyWorldCalculator.hpp"
 
 #include <cstddef>
@@ -11,6 +6,7 @@
 #include <vector>
 
 #include "intersections/intersection.hpp"
+#include "spatial/bvh.hpp"
 #include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {

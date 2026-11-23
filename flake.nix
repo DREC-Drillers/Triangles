@@ -25,7 +25,7 @@
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-      llvm = pkgs.llvmPackages_18;
+      llvm = pkgs.llvmPackages_22;
 
       # Install all required components together so find_package sees one prefix.
       generalFunctionsPackage = generalFunctions.packages.${system}.default.override {
@@ -42,14 +42,12 @@
         packages.pyyaml
       ]);
 
-      mkQualityTool = tool: pkgs.writeShellScriptBin "${tool}-18" ''
-        exec ${llvm.clang-tools}/bin/${tool} "$@"
+      clangFormat = pkgs.writeShellScriptBin "clang-format-18" ''
+        exec ${pkgs.llvmPackages_18.clang-tools}/bin/clang-format "$@"
       '';
-
-      qualityTools = map mkQualityTool [
-        "clang-format"
-        "clang-tidy"
-      ];
+      clangTidy = pkgs.writeShellScriptBin "clang-tidy-22" ''
+        exec ${llvm.clang-tools}/bin/clang-tidy "$@"
+      '';
     in
     {
       devShells.${system}.default = mkShell {
@@ -59,8 +57,10 @@
           pkgs.git
           python
           llvm.clang-tools
+          clangFormat
+          clangTidy
           nixGL.packages.${system}.nixGLIntel
-        ] ++ qualityTools;
+        ];
 
         buildInputs = [
           pkgs.glfw
@@ -76,7 +76,7 @@
         CXXFLAGS = "-fstack-protector-strong -fwrapv -fPIC -fstrict-flex-arrays=1";
 
         shellHook = ''
-          echo "Triangles environment: LLVM 18, CMake, Ninja, Python, GLFW and GLM."
+          echo "Triangles environment: LLVM 22, CMake, Ninja, Python, GLFW and GLM."
         '';
       };
 
