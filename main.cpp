@@ -27,15 +27,15 @@ int main(int argc, char* argv[]) {
 
     try {
         using Clock = std::chrono::steady_clock;
-
-        //FIXME logical enters
-
         const auto start = Clock::now();
+
         const auto input =
             triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
         const auto parsed = Clock::now();
+
         const triangles::PolyWorld world(input);
         const auto worldCreated = Clock::now();
+
         const triangles::PolyProcessor processor(world);
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
