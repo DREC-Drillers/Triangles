@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
         const triangles::PolyWorld world(input);
         const auto worldCreated = Clock::now();
-
+        
         const triangles::PolyProcessor processor(world);
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         std::cout.flush();
 
         visualizer::Scene scene;
-        for (auto& object : triangles::RenderDataPreparer{}.prepare(result)) {
+        for (auto& object : triangles::RenderDataPreparer::prepare(result)) {
             scene.addObject(std::move(object));
         }
         const auto scenePrepared = Clock::now();

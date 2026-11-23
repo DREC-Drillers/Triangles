@@ -17,9 +17,9 @@ struct RenderStyle {
 
 class RenderDataPreparer {
 public:
-    std::vector<visualizer::SceneObject>   //FIXME make static 
+    static std::vector<visualizer::SceneObject>
     prepare(const IntersectionData& intersections,
-            const RenderStyle& style = {}) const {
+            const RenderStyle& style = {}) {
         std::vector<visualizer::SceneObject> objects;
         objects.reserve(intersections.nonIntersectingPolys.size() +
                         intersections.intersectingPolys.size());
