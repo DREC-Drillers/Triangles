@@ -64,28 +64,14 @@ private:
     static visualizer::SceneObject
     prepareSegment(const geometry::polygon_t<3>& polygon,
                    const std::array<float, 4>& color) {
-        const auto& points = polygon.points();
-
-        std::size_t firstEndpoint = 0;
-        std::size_t secondEndpoint = 0;
-        double longestDistance = 0;
-        for (std::size_t first = 0; first < points.size(); ++first) {  //FIXME опционально в отдельную функцию
-            for (std::size_t second = first + 1; second < points.size(); ++second) {
-                const double distance = points[first].distance(points[second]);
-                if (distance > longestDistance) {
-                    longestDistance = distance;
-                    firstEndpoint = first;  
-                    secondEndpoint = second;
-                }
-            }
-        }
+        const auto segment = polygon.maxEdge().value();
 
         visualizer::SceneObject object;
         object.geometry.topology = visualizer::Topology::LINES;
         object.material.color = color;
         object.material.lit = false;
-        object.geometry.vertices = {toRenderVertex(points[firstEndpoint]),
-                                    toRenderVertex(points[secondEndpoint])};
+        object.geometry.vertices = {toRenderVertex(segment.a()),
+                                    toRenderVertex(segment.b())};
         return object;
     }
 
