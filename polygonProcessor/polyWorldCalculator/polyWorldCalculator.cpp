@@ -38,7 +38,7 @@ prepareBvh(const PolyWorld& world) {
 
 IntersectionData
 PolyWorldCalculator::calculateIntersections(const PolyWorld& world) {
-    IntersectionData intersections{world, {}, {}};
+    IntersectionData intersections{};
 
     const auto& polys = world.polys();
     const auto bvh = prepareBvh(world);

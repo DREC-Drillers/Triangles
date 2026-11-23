@@ -1,5 +1,6 @@
 #pragma once
 
+#include "polygonProcessor/polyWorld.hpp"
 #include "polygonProcessor/polyWorldCalculator/intersections/intersectionData.hpp"
 
 namespace triangles {

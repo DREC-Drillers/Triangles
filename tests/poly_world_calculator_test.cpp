@@ -88,14 +88,12 @@ TEST(PolyWorld, PreservesPolygonVertices) {
 TEST(PolyWorldCalculator, HandlesEmptyAndSingleTriangle) {
     const PolyWorld empty(InitPolysData{});
     const auto emptyResult = PolyWorldCalculator::calculateIntersections(empty);
-    EXPECT_EQ(&emptyResult.world, &empty);
     EXPECT_TRUE(emptyResult.intersectingPolys.empty());
     EXPECT_TRUE(emptyResult.nonIntersectingPolys.empty());
     const PolyWorld single(InitPolysData{{{geometry::point_t<3>({0, 0, 0}),
                                            geometry::point_t<3>({4, 0, 0}),
                                            geometry::point_t<3>({0, 4, 0})}}});
     const auto singleResult = PolyWorldCalculator::calculateIntersections(single);
-    EXPECT_EQ(&singleResult.world, &single);
     EXPECT_TRUE(singleResult.intersectingPolys.empty());
     EXPECT_EQ(singleResult.nonIntersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{single.polys()[0].get()}));
@@ -113,7 +111,6 @@ TEST(PolyWorldCalculator, PartitionsPointersIntoOriginalWorld) {
                                           geometry::point_t<3>({10, 11, 0})}}});
     const auto* original = world.polys().data();
     const auto result = PolyWorldCalculator::calculateIntersections(world);
-    EXPECT_EQ(&result.world, &world);
     EXPECT_EQ(result.intersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[0].get(),
                                                           world.polys()[1].get()}));
@@ -210,7 +207,6 @@ TEST(PolyWorldCalculator, PartitionsInterleavedIndependentGroupsInInputOrder) {
                                           geometry::point_t<3>({31, 0, 0}),
                                           geometry::point_t<3>({30, 1, 0})}}});
     const auto result = PolyWorldCalculator::calculateIntersections(world);
-    EXPECT_EQ(&result.world, &world);
     EXPECT_EQ(result.intersectingPolys,
               (std::vector<const geometry::polygon_t<3>*>{world.polys()[1].get(),
                                                           world.polys()[2].get(),
