@@ -1,8 +1,3 @@
-// clang-format off
-// Include BVH before geometry is imported with Clang 18.
-#include "spatial/bvh.hpp"
-// clang-format on
-
 #include "polyWorldCalculator.hpp"
 
 #include <cstddef>
@@ -11,6 +6,8 @@
 #include <vector>
 
 #include "intersections/intersection.hpp"
+#include "spatial/bvh.hpp"
+#include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
 
@@ -19,17 +16,16 @@ using geometry::axisAlignedBoundingBox_t;
 
 namespace {
 
-const geometry::triangle_t<3>& asTriangle(const geometry::polygon_t<3>& polygon) {
+const geometry::triangle_t<geometry::defaultDim>&
+asTriangle(const geometry::polygon_t<geometry::defaultDim>& polygon) {
     if (polygon.numOfPoints() != 3) {
         throw std::invalid_argument("Only triangles are supported; other "
                                     "polygons are not supported yet");
     }
-    return static_cast<const geometry::triangle_t<3>&>(polygon);
+    return static_cast<const geometry::triangle_t<geometry::defaultDim>&>(polygon);
 }
 
-} // namespace
-
-Bvh PolyWorldCalculator::prepareBvh(const PolyWorld& world) const {
+Bvh prepareBvh(const PolyWorld& world) {
     std::vector<axisAlignedBoundingBox_t> bounds;
     bounds.reserve(world.polys().size());
     for (const auto& polygon : world.polys()) {
@@ -38,9 +34,11 @@ Bvh PolyWorldCalculator::prepareBvh(const PolyWorld& world) const {
     return Bvh(std::move(bounds));
 }
 
+} // namespace
+
 IntersectionData
-PolyWorldCalculator::calculateIntersections(const PolyWorld& world) const {
-    IntersectionData intersections{world, {}, {}};
+PolyWorldCalculator::calculateIntersections(const PolyWorld& world) {
+    IntersectionData intersections{};
 
     const auto& polys = world.polys();
     const auto bvh = prepareBvh(world);
