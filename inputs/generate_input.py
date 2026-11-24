@@ -14,12 +14,70 @@ def triangle(rng, minimum, maximum):
         a, b, c = points
         u = [b[i] - a[i] for i in range(3)]
         v = [c[i] - a[i] for i in range(3)]
-        cross = (u[1] * v[2] - u[2] * v[1],
-                 u[2] * v[0] - u[0] * v[2],
-                 u[0] * v[1] - u[1] * v[0])
-        if sum(x * x for x in cross) > 1e-12:
+        if sum(x * x for x in cross(u, v)) > 1e-12:
             return points
     raise ValueError("Range is too small to generate a valid triangle at 6 decimal places")
+
+
+def cross(u, v):
+    return (u[1] * v[2] - u[2] * v[1],
+            u[2] * v[0] - u[0] * v[2],
+            u[0] * v[1] - u[1] * v[0])
+
+
+def random_frame(rng):
+    # Uniformly distributed axis on the sphere and two perpendicular unit vectors.
+    height = rng.uniform(-1, 1)
+    azimuth = rng.uniform(0, math.tau)
+    radial = math.sqrt(1 - height * height)
+    cosine, sine = math.cos(azimuth), math.sin(azimuth)
+    axis = (radial * cosine, radial * sine, height)
+    tangent = (-sine, cosine, 0)
+    return axis, tangent, cross(axis, tangent)
+
+
+def triangle_around(rng, center, axis, tangent, radius):
+    phase = rng.uniform(0, math.tau)
+    points = []
+    for index in range(3):
+        angle = phase + index * math.tau / 3 + rng.uniform(-0.3, 0.3)
+        distance = radius * rng.uniform(0.35, 1)
+        along = distance * math.cos(angle)
+        across = distance * math.sin(angle)
+        points.append(tuple(c + along * u + across * v
+                            for c, u, v in zip(center, axis, tangent)))
+    # Consecutive rays are less than pi apart, so center is strictly inside.
+    rng.shuffle(points)
+    return points
+
+
+def crossing_group(rng, origin, step, size):
+    center = tuple(value + step * rng.uniform(0.42, 0.58) for value in origin)
+    axis, tangent, bitangent = random_frame(rng)
+    phase = rng.uniform(0, math.pi)
+    spacing = math.pi / size
+    for index in range(size):
+        # Each plane contains the same line, with well-separated angles modulo pi.
+        tilt = phase + spacing * (index + rng.uniform(-0.15, 0.15))
+        cosine, sine = math.cos(tilt), math.sin(tilt)
+        direction = tuple(v * cosine + w * sine for v, w in zip(tangent, bitangent))
+        yield triangle_around(rng, center, axis, direction,
+                              step * rng.uniform(0.14, 0.35))
+
+
+def separated_group(rng, origin, step, size):
+    # The two bounding boxes have a gap on x regardless of rotation.
+    for slot in (0.25, 0.75)[:size]:
+        center = (origin[0] + step * (slot + rng.uniform(-0.04, 0.04)),
+                  origin[1] + step * rng.uniform(0.24, 0.76),
+                  origin[2] + step * rng.uniform(0.24, 0.76))
+        axis, tangent, _ = random_frame(rng)
+        yield triangle_around(rng, center, axis, tangent,
+                              step * rng.uniform(0.08, 0.19))
+
+
+def intersecting_count(count, fraction):
+    return min(2 * round(count * fraction / 2), 2 * (count // 2))
 
 
 def mixed_triangles(rng, count, minimum, maximum, intersecting_fraction):
@@ -28,32 +86,33 @@ def mixed_triangles(rng, count, minimum, maximum, intersecting_fraction):
     while side ** 3 < cells:
         side += 1
     step = (maximum - minimum) / side
-    if not math.isfinite(step) or step <= 0:
-        raise ValueError("Coordinate range is not representable")
+    # Keep a generous margin so floating-point rounding cannot collapse a group.
+    if not math.isfinite(step) or step < 1024 * math.ulp(max(abs(minimum), abs(maximum))):
+        raise ValueError("Coordinate range is too small for the requested count")
 
-    intersecting = min(2 * round(count * intersecting_fraction / 2), 2 * (count // 2))
+    active = intersecting_count(count, intersecting_fraction)
+    inactive = count - active
     order = list(range(cells))
     rng.shuffle(order)
 
-    for position, cell in enumerate(order):
+    for cell in order:
+        if active + inactive == 0:
+            break
+
         origin = (minimum + (cell % side) * step,
                   minimum + ((cell // side) % side) * step,
                   minimum + (cell // (side * side)) * step)
-        axes = [0, 1, 2]
-        rng.shuffle(axes)
-        active = position < intersecting // 2
-        offsets = (0, 0.05 if active else 0.5)
-        pair_size = min(2, count - position * 2)
-        for offset in offsets[:pair_size]:
-            points = []
-            for u, v in ((0.1, 0.1), (0.4, 0.1), (0.1, 0.4)):
-                local = (u + offset, v + offset, 0.5)
-                point = tuple(origin[axis] + step * local[axes[axis]]
-                              for axis in range(3))
-                points.append(point)
-            if len(set(points)) != 3:
-                raise ValueError("Coordinate range is too small for the requested count")
-            yield points
+        if rng.randrange(active + inactive) < active:
+            size = rng.randint(2, min(5, active))
+            if active - size == 1:
+                # Leave either nothing or enough triangles for another crossing.
+                size = active if size == 2 else size - 1
+            yield from crossing_group(rng, origin, step, size)
+            active -= size
+        else:
+            size = min(2, inactive)
+            yield from separated_group(rng, origin, step, size)
+            inactive -= size
 
 
 def main():
@@ -62,7 +121,7 @@ def main():
     parser.add_argument("output", type=Path, help="output file")
     parser.add_argument("--seed", type=int, help="seed for reproducible inputs")
     parser.add_argument("--mode", choices=("mixed", "random"), default="mixed",
-                        help="mixed: isolated pairs with a controlled intersection ratio (default)")
+                        help="mixed: crossing 3D groups with a controlled intersection ratio (default)")
     parser.add_argument("--intersecting-fraction", type=float, default=0.5,
                         help="fraction of triangles participating in intersections in mixed mode (default: 0.5)")
     parser.add_argument("--min", dest="minimum", type=float, default=-10,
@@ -98,8 +157,7 @@ def main():
             parser.error(str(error))
 
     if args.mode == "mixed":
-        intersecting = min(2 * round(args.count * args.intersecting_fraction / 2),
-                           2 * (args.count // 2))
+        intersecting = intersecting_count(args.count, args.intersecting_fraction)
         print(f"Triangles: {args.count}; intersecting: {intersecting}; "
               f"non-intersecting: {args.count - intersecting}")
 
