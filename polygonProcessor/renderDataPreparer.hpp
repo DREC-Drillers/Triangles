@@ -49,7 +49,7 @@ private:
     static visualizer::SceneObject preparePoint(const geometry::point_t<3>& point,
                                                 const std::array<float, 4>& color) {
         visualizer::SceneObject object;
-        object.geometry.topology = visualizer::Topology::Points;
+        object.geometry.topology = visualizer::Topology::POINTS;
         object.material.color = color;
         object.material.lit = false;
         object.geometry.vertices.push_back(toRenderVertex(point));
@@ -62,7 +62,7 @@ private:
         const auto segment = polygon.maxEdge().value();
 
         visualizer::SceneObject object;
-        object.geometry.topology = visualizer::Topology::Lines;
+        object.geometry.topology = visualizer::Topology::LINES;
         object.material.color = color;
         object.material.lit = false;
         object.geometry.vertices = {toRenderVertex(segment.a()),
@@ -91,7 +91,7 @@ private:
         }
 
         visualizer::SceneObject object;
-        object.geometry.topology = visualizer::Topology::Triangles;
+        object.geometry.topology = visualizer::Topology::TRIANGLES;
         object.material.color = color;
         object.material.lit = true;
         object.geometry.vertices.reserve(3);
