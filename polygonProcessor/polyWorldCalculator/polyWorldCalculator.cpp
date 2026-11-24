@@ -6,8 +6,7 @@
 #include <vector>
 
 #include "intersections/intersection.hpp"
-#include "spatial/bvh.hpp"
-#include "spatial/geometry/geomConst.hpp"
+#include "spetial/bvh.hpp"
 
 namespace triangles {
 
@@ -16,16 +15,17 @@ using geometry::axisAlignedBoundingBox_t;
 
 namespace {
 
-const geometry::triangle_t<geometry::defaultDim>&
-asTriangle(const geometry::polygon_t<geometry::defaultDim>& polygon) {
+const geometry::triangle_t<3>& asTriangle(const geometry::polygon_t<3>& polygon) {
     if (polygon.numOfPoints() != 3) {
         throw std::invalid_argument("Only triangles are supported; other "
                                     "polygons are not supported yet");
     }
-    return static_cast<const geometry::triangle_t<geometry::defaultDim>&>(polygon);
+    return static_cast<const geometry::triangle_t<3>&>(polygon);
 }
 
-Bvh prepareBvh(const PolyWorld& world) {
+} // namespace
+
+Bvh PolyWorldCalculator::prepareBvh(const PolyWorld& world) const {
     std::vector<axisAlignedBoundingBox_t> bounds;
     bounds.reserve(world.polys().size());
     for (const auto& polygon : world.polys()) {
@@ -34,11 +34,9 @@ Bvh prepareBvh(const PolyWorld& world) {
     return Bvh(std::move(bounds));
 }
 
-} // namespace
-
 IntersectionData
-PolyWorldCalculator::calculateIntersections(const PolyWorld& world) {
-    IntersectionData intersections{};
+PolyWorldCalculator::calculateIntersections(const PolyWorld& world) const {
+    IntersectionData intersections{world, {}, {}};
 
     const auto& polys = world.polys();
     const auto bvh = prepareBvh(world);

@@ -1,4 +1,4 @@
-"""Run the same C++ quality checks locally and in CI (Clang 22 for analysis, clang-format 18 for formatting)."""
+"""Run the same C++ quality checks locally and in CI (LLVM tools version 18)."""
 
 import argparse
 import json
@@ -41,7 +41,7 @@ def project_files():
 
 
 def tidy_command(source, build_dir, compiled, options=()):
-    command = ["clang-tidy-22", str(source), "--config-file=.clang-tidy", *options]
+    command = ["clang-tidy-18", str(source), "--config-file=.clang-tidy", *options]
     if (ROOT / source).resolve() in compiled:
         command.extend(["-p", str(build_dir)])
     else:

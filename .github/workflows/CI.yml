@@ -48,6 +48,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - name: Install clang-tidy 18
+        run: sudo apt-get update && sudo apt-get install --yes clang-tidy-18 ninja-build
       - name: Configure compilation database
         run: nix develop --command cmake --preset quality
       - name: Build module interfaces for analysis

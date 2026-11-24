@@ -20,7 +20,13 @@ public:
     const PolyWorld& world() const { return world_; }
 
     IntersectionData calculateIntersections() const {
-        return PolyWorldCalculator::calculateIntersections(world_);
+        PolyWorldCalculator calculator;
+        return calculateIntersections(calculator);
+    }
+
+    template <typename Calculator>
+    IntersectionData calculateIntersections(Calculator& calculator) const {
+        return calculator.calculateIntersections(world_);
     }
 };
 

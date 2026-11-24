@@ -1,12 +1,10 @@
 #include "intersection.hpp"
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
-#include <functional>
-#include <stdexcept>
-#include <variant>
 
-#include "spatial/geometry/geomConst.hpp"
 #include "triangleIntersection.hpp"
 
 namespace triangles {
@@ -20,10 +18,50 @@ namespace {
 
 constexpr double DISTANCE_EPSILON = 1e-9;
 
-enum class RealTriangleForm { POINT, SEGMENT, TRIANGLE };
+} // namespace
 
-RealTriangleForm
-determineRealTriangleForm(const triangle_t<geometry::defaultDim>& triangle) {
+bool doIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
+    const auto firstForm = determineRealTriangleForm(first);
+    const auto secondForm = determineRealTriangleForm(second);
+
+    if (firstForm == RealTriangleForm::POINT) {
+        switch (secondForm) {
+            case RealTriangleForm::POINT:
+                return doPointAndPointIntersect(first.a(), second.a());
+            case RealTriangleForm::SEGMENT:
+                return doPointAndSegmentIntersect(
+                    first.a(), degenerateTriangleToSegment(second));
+            case RealTriangleForm::TRIANGLE:
+                return doPointAndTriangleIntersect(first.a(), second);
+        }
+    }
+    if (firstForm == RealTriangleForm::SEGMENT) {
+        const auto firstSegment = degenerateTriangleToSegment(first);
+        switch (secondForm) {
+            case RealTriangleForm::POINT:
+                return doPointAndSegmentIntersect(second.a(), firstSegment);
+            case RealTriangleForm::SEGMENT:
+                return doSegmentAndSegmentIntersect(
+                    firstSegment, degenerateTriangleToSegment(second));
+            case RealTriangleForm::TRIANGLE:
+                return doSegmentAndTriangleIntersect(firstSegment, second);
+        }
+    }
+    if (firstForm == RealTriangleForm::TRIANGLE) {
+        switch (secondForm) {
+            case RealTriangleForm::POINT:
+                return doPointAndTriangleIntersect(second.a(), first);
+            case RealTriangleForm::SEGMENT:
+                return doSegmentAndTriangleIntersect(
+                    degenerateTriangleToSegment(second), first);
+            case RealTriangleForm::TRIANGLE:
+                return doTrianglesIntersect(first, second);
+        }
+    }
+    return false;
+}
+
+RealTriangleForm determineRealTriangleForm(const triangle_t<3>& triangle) {
     if (triangle.a() == triangle.b() && triangle.b() == triangle.c()) {
         return RealTriangleForm::POINT;
     }
@@ -31,8 +69,15 @@ determineRealTriangleForm(const triangle_t<geometry::defaultDim>& triangle) {
                                   : RealTriangleForm::TRIANGLE;
 }
 
-bool pointLiesInTrianglePlain(const point_t<geometry::defaultDim>& point,
-                              const triangle_t<geometry::defaultDim>& triangle) {
+segment_t degenerateTriangleToSegment(const triangle_t<3>& triangle) {
+    const std::array lengths{triangle.lenAB(), triangle.lenBC(), triangle.lenCA()};
+    const std::size_t first =
+        std::max_element(lengths.begin(), lengths.end()) - lengths.begin();
+    return segment_t(triangle.point(first), triangle.point((first + 1) % 3));
+}
+
+bool pointLiesInTrianglePlain(const point_t<3>& point,
+                              const triangle_t<3>& triangle) {
     const auto normal = triangle.unitNormal();
     vector_t pointDir(triangle.a(), point);
 
@@ -40,13 +85,12 @@ bool pointLiesInTrianglePlain(const point_t<geometry::defaultDim>& point,
     return std::abs(pointDistanceToPlane) <= DISTANCE_EPSILON;
 }
 
-bool doPointAndPointIntersect(const point_t<geometry::defaultDim>& firstPoint,
-                              const point_t<geometry::defaultDim>& secondPoint) {
+bool doPointAndPointIntersect(const point_t<3>& firstPoint,
+                              const point_t<3>& secondPoint) {
     return firstPoint.isApprox(secondPoint);
 }
 
-bool doPointAndSegmentIntersect(const point_t<geometry::defaultDim>& point,
-                                const segment_t& segment) {
+bool doPointAndSegmentIntersect(const point_t<3>& point, const segment_t& segment) {
     const auto direction = segment.direction();
     const vector_t offset(segment.a(), point);
     const auto unitDirection = direction.normalized();
@@ -58,8 +102,8 @@ bool doPointAndSegmentIntersect(const point_t<geometry::defaultDim>& point,
            projection <= segment.length() + DISTANCE_EPSILON;
 }
 
-bool doPointAndTriangleIntersect(const point_t<geometry::defaultDim>& point,
-                                 const triangle_t<geometry::defaultDim>& triangle) {
+bool doPointAndTriangleIntersect(const point_t<3>& point,
+                                 const triangle_t<3>& triangle) {
     if (!pointLiesInTrianglePlain(point, triangle)) {
         return false;
     }
@@ -101,8 +145,8 @@ bool doSegmentAndSegmentIntersect(const segment_t& first, const segment_t& secon
     return first.isIntersectsCoplanar(second, unitNormal);
 }
 
-bool doSegmentIntersectTrianglePlain(
-    const segment_t& segment, const triangle_t<geometry::defaultDim>& triangle) {
+bool doSegmentIntersectTrianglePlain(const segment_t& segment,
+                                     const triangle_t<3>& triangle) {
     const auto normal = triangle.unitNormal();
 
     const double startDistance = vector_t(triangle.a(), segment.a()).dot(normal);
@@ -116,8 +160,8 @@ bool doSegmentIntersectTrianglePlain(
     return true;
 }
 
-point_t<geometry::defaultDim> getSegAndTrianglePlaneIntersectPoint(
-    const segment_t& segment, const triangle_t<geometry::defaultDim>& triangle) {
+point_t<3> getSegAndTrianglePlaneIntersectPoint(const segment_t& segment,
+                                                const triangle_t<3>& triangle) {
     const auto normal = triangle.unitNormal();
     const double startDistance = vector_t(triangle.a(), segment.a()).dot(normal);
     const double endDistance = vector_t(triangle.a(), segment.b()).dot(normal);
@@ -125,13 +169,13 @@ point_t<geometry::defaultDim> getSegAndTrianglePlaneIntersectPoint(
     const auto pointDir =
         segment.direction() * (startDistance / (startDistance - endDistance));
 
-    return point_t<geometry::defaultDim>({segment.a().x() + pointDir.x(),
-                                          segment.a().y() + pointDir.y(),
-                                          segment.a().z() + pointDir.z()});
+    return point_t<3>({segment.a().x() + pointDir.x(),
+                       segment.a().y() + pointDir.y(),
+                       segment.a().z() + pointDir.z()});
 }
 
-bool doSegmentAndTriangleIntersect(
-    const segment_t& segment, const triangle_t<geometry::defaultDim>& triangle) {
+bool doSegmentAndTriangleIntersect(const segment_t& segment,
+                                   const triangle_t<3>& triangle) {
     if (doPointAndTriangleIntersect(segment.a(), triangle) ||
         doPointAndTriangleIntersect(segment.b(), triangle)) {
         return true;
@@ -156,75 +200,6 @@ bool doSegmentAndTriangleIntersect(
     const auto intersection =
         getSegAndTrianglePlaneIntersectPoint(segment, triangle);
     return doPointAndTriangleIntersect(intersection, triangle);
-}
-
-using TriangleForm =
-    std::variant<point_t<geometry::defaultDim>, segment_t,
-                 std::reference_wrapper<const triangle_t<geometry::defaultDim>>>;
-
-TriangleForm toRealForm(const triangle_t<geometry::defaultDim>& triangle) {
-    switch (determineRealTriangleForm(triangle)) {
-        case RealTriangleForm::POINT:
-            return triangle.a();
-        case RealTriangleForm::SEGMENT:
-            return triangle.maxEdge().value();
-        case RealTriangleForm::TRIANGLE:
-            return std::cref(triangle);
-    }
-    throw std::logic_error("Unknown triangle form");
-}
-
-struct Intersect {
-    bool operator()(const point_t<geometry::defaultDim>& first,
-                    const point_t<geometry::defaultDim>& second) const {
-        return doPointAndPointIntersect(first, second);
-    }
-
-    bool operator()(const point_t<geometry::defaultDim>& point,
-                    const segment_t& segment) const {
-        return doPointAndSegmentIntersect(point, segment);
-    }
-
-    bool operator()(const point_t<geometry::defaultDim>& point,
-                    const triangle_t<geometry::defaultDim>& triangle) const {
-        return doPointAndTriangleIntersect(point, triangle);
-    }
-
-    bool operator()(const segment_t& first, const segment_t& second) const {
-        return doSegmentAndSegmentIntersect(first, second);
-    }
-
-    bool operator()(const segment_t& segment,
-                    const triangle_t<geometry::defaultDim>& triangle) const {
-        return doSegmentAndTriangleIntersect(segment, triangle);
-    }
-
-    bool operator()(const triangle_t<geometry::defaultDim>& first,
-                    const triangle_t<geometry::defaultDim>& second) const {
-        return doTrianglesIntersect(first, second);
-    }
-
-    bool operator()(const segment_t& segment,
-                    const point_t<geometry::defaultDim>& point) const {
-        return (*this)(point, segment);
-    }
-
-    bool operator()(const triangle_t<geometry::defaultDim>& triangle,
-                    const point_t<geometry::defaultDim>& point) const {
-        return (*this)(point, triangle);
-    }
-
-    bool operator()(const triangle_t<geometry::defaultDim>& triangle,
-                    const segment_t& segment) const {
-        return (*this)(segment, triangle);
-    }
-};
-
-} // namespace
-
-bool doIntersect(const triangle_t<geometry::defaultDim>& first,
-                 const triangle_t<geometry::defaultDim>& second) {
-    return std::visit(Intersect{}, toRealForm(first), toRealForm(second));
 }
 
 } // namespace triangles

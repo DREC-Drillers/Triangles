@@ -200,7 +200,7 @@ python3 scripts/benchmark_intersections.py \
 | [3D-Visualizer](https://github.com/DREC-Drillers/3D-Visualizer) | Сцена, камера, окно и отрисовка |
 | GoogleTest | Тестирование |
 
-Nix предоставляет Clang/LLVM 22, CMake 3.28+, Ninja, Python и необходимые
+Nix предоставляет Clang/LLVM 18, CMake 3.28+, Ninja, Python и необходимые
 библиотеки. Ревизии зависимостей закреплены в `flake.lock`.
 
 Обновить одну из зависимостей:
