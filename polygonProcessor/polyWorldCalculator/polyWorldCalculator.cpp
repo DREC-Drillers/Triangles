@@ -1,3 +1,8 @@
+// clang-format off
+// Include BVH before geometry is imported with Clang 18.
+#include "spatial/bvh.hpp"
+// clang-format on
+
 #include "polyWorldCalculator.hpp"
 
 #include <cstddef>
@@ -6,7 +11,6 @@
 #include <vector>
 
 #include "intersections/intersection.hpp"
-#include "spetial/bvh.hpp"
 
 namespace triangles {
 
