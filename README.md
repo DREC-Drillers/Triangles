@@ -42,6 +42,12 @@ triangles <input-file> [--no-visualization]
 nixGLIntel ./build/release/triangles inputs/example.txt
 ```
 
+В WSLg (Ubuntu/Debian) используй `triangles-wsl-gl` вместо `nixGLIntel`:
+
+```bash
+triangles-wsl-gl ./build/release/triangles inputs/example.txt
+```
+
 Без окна:
 
 ```bash

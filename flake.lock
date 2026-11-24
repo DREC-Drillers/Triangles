@@ -109,11 +109,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794078090,
-        "narHash": "sha256-kNZQsNypcFgHc9HAjW5tN38S61wZmXQo/vTo9KnyNSM=",
+        "lastModified": 1795549111,
+        "narHash": "sha256-2kf1iExa6VtbjqMj3LEPbc16g2oSpKZRU5ibafc9WRA=",
         "owner": "DREC-Drillers",
         "repo": "3D-Visualizer",
-        "rev": "ad2eb87d8035f10c265844a8cc349027b0dca87f",
+        "rev": "4cb331072feb1677f717ae5607781d6d0cbab156",
         "type": "github"
       },
       "original": {

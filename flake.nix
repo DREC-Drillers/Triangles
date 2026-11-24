@@ -48,6 +48,26 @@
       clangTidy = pkgs.writeShellScriptBin "clang-tidy-22" ''
         exec ${llvm.clang-tools}/bin/clang-tidy "$@"
       '';
+      trianglesWslGl = pkgs.writeShellScriptBin "triangles-wsl-gl" ''
+        host_lib=/usr/lib/x86_64-linux-gnu
+        loader=/lib64/ld-linux-x86-64.so.2
+
+        if [ "$#" -eq 0 ]; then
+          echo "Usage: triangles-wsl-gl <triangles-binary> <input-file>" >&2
+          exit 2
+        fi
+
+        if [ ! -c /dev/dxg ] || [ ! -d /mnt/wslg ] || [ ! -x "$loader" ] ||
+           [ ! -r "$host_lib/dri/d3d12_dri.so" ]; then
+          echo "triangles-wsl-gl requires WSLg and the Ubuntu/Debian Mesa D3D12 driver." >&2
+          exit 1
+        fi
+
+        unset WAYLAND_DISPLAY WAYLAND_SOCKET LIBGL_ALWAYS_SOFTWARE LIBGL_ALWAYS_INDIRECT
+        unset LIBGL_DRIVERS_PATH __EGL_VENDOR_LIBRARY_FILENAMES MESA_LOADER_DRIVER_OVERRIDE
+        export XDG_SESSION_TYPE=x11 GALLIUM_DRIVER=d3d12
+        exec "$loader" --library-path "/usr/lib/wsl/lib:$host_lib" "$@"
+      '';
     in
     {
       devShells.${system}.default = mkShell {
@@ -60,6 +80,7 @@
           clangFormat
           clangTidy
           nixGL.packages.${system}.nixGLIntel
+          trianglesWslGl
         ];
 
         buildInputs = [
