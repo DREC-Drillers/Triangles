@@ -1,6 +1,4 @@
 #include <chrono>
-#include <core/backendFactory.hpp>
-#include <core/visualizer.hpp>
 #include <cstddef>
 #include <exception>
 #include <filesystem>
@@ -12,10 +10,11 @@
 #include <utility>
 
 #include "cameraController/orbitCameraController.hpp"
+#include <core/backendFactory.hpp>
+#include <core/visualizer.hpp>
 #include "parser/parser.hpp"
 #include "polygonProcessor/polyProcessor.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
-#include "spatial/geometry/geomConst.hpp"
 
 int main(int argc, char* argv[]) {
     const std::span<char* const> arguments(argv, static_cast<std::size_t>(argc));
@@ -41,9 +40,8 @@ int main(int argc, char* argv[]) {
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();
 
-        const std::unordered_set<const geometry::polygon_t<geometry::defaultDim>*>
-            intersecting(result.intersectingPolys.begin(),
-                         result.intersectingPolys.end());
+        const std::unordered_set<const geometry::polygon_t<3>*> intersecting(
+            result.intersectingPolys.begin(), result.intersectingPolys.end());
         for (std::size_t index = 0; index < world.polys().size(); ++index) {
             if (intersecting.contains(world.polys()[index].get())) {
                 std::cout << index << '\n';

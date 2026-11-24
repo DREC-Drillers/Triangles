@@ -1,14 +1,11 @@
-#include "spatial/bvh.hpp"
-
-#include "polyWorldCalculator.hpp"
-
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
+#include "spatial/bvh.hpp"
+#include "polyWorldCalculator.hpp"
 #include "intersections/intersection.hpp"
-#include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
 
@@ -17,13 +14,12 @@ using geometry::axisAlignedBoundingBox_t;
 
 namespace {
 
-const geometry::triangle_t<geometry::defaultDim>&
-asTriangle(const geometry::polygon_t<geometry::defaultDim>& polygon) {
+const geometry::triangle_t<3>& asTriangle(const geometry::polygon_t<3>& polygon) {
     if (polygon.numOfPoints() != 3) {
         throw std::invalid_argument("Only triangles are supported; other "
                                     "polygons are not supported yet");
     }
-    return static_cast<const geometry::triangle_t<geometry::defaultDim>&>(polygon);
+    return static_cast<const geometry::triangle_t<3>&>(polygon);
 }
 
 Bvh

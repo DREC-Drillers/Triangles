@@ -1,12 +1,10 @@
 #pragma once
 
-#include "spatial/geometry/geomConst.hpp"
-
 import geometry;
 
 namespace triangles {
 
-bool doIntersect(const geometry::triangle_t<geometry::defaultDim>& first,
-                 const geometry::triangle_t<geometry::defaultDim>& second);
+bool doIntersect(const geometry::triangle_t<3>& first,
+                 const geometry::triangle_t<3>& second);
 
 } // namespace triangles

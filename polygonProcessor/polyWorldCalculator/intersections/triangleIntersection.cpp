@@ -6,8 +6,6 @@
 #include <cstddef>
 #include <utility>
 
-#include "spatial/geometry/geomConst.hpp"
-
 namespace triangles {
 
 namespace {
@@ -18,7 +16,7 @@ using geometry::triangle_t;
 enum class TrianglePosToPlane { INTERSECTS, BELONGS, DOES_NOT_INTERSECT };
 
 struct PlaneRelativeVertex {
-    geometry::point_t<geometry::defaultDim> vertex;
+    geometry::point_t<3> vertex;
     double signedDistanceToPlane;
 };
 
@@ -64,11 +62,11 @@ bool triangleHasEdgeSeparatingFromOther(const triangle_t<2>& curTriangle,
     return false;
 }
 
-bool doTrianglesIntersectOnPlane(const triangle_t<geometry::defaultDim>& first,
-                                 const triangle_t<geometry::defaultDim>& second) {
+bool doTrianglesIntersectOnPlane(const triangle_t<3>& first,
+                                  const triangle_t<3>& second) {
     const auto normal = first.unitNormal();
 
-    const std::array<double, geometry::defaultDim> normalComponents{
+    const std::array<double, 3> normalComponents{
         std::abs(normal.x()), std::abs(normal.y()), std::abs(normal.z())};
     const std::size_t droppedAxis =
         std::max_element(normalComponents.begin(), normalComponents.end()) -
@@ -131,9 +129,9 @@ void canonicalizeTriangle(PlaneRelativeTriangle& curTriangle,
     }
 }
 
-PlaneRelativeTriangle getTrianglePosToPlaneOfTriangle(
-    const triangle_t<geometry::defaultDim>& curTriangle,
-    const triangle_t<geometry::defaultDim>& planeTriangle) {
+PlaneRelativeTriangle
+getTrianglePosToPlaneOfTriangle(const triangle_t<3>& curTriangle,
+                                const triangle_t<3>& planeTriangle) {
     const double firstVertexOrient = curTriangle.a().signedDistanceToPlane(
         planeTriangle.a(), planeTriangle.b(), planeTriangle.c());
     const double secondVertexOrient = curTriangle.b().signedDistanceToPlane(
@@ -171,8 +169,7 @@ PlaneRelativeTriangle getTrianglePosToPlaneOfTriangle(
 
 } // namespace
 
-bool doTrianglesIntersect(const triangle_t<geometry::defaultDim>& first,
-                          const triangle_t<geometry::defaultDim>& second) {
+bool doTrianglesIntersect(const triangle_t<3>& first, const triangle_t<3>& second) {
     auto firstPos = getTrianglePosToPlaneOfTriangle(first, second);
     if (firstPos.relation == TrianglePosToPlane::DOES_NOT_INTERSECT) {
         return false;

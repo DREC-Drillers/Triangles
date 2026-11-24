@@ -7,7 +7,6 @@
 
 #include "polygonProcessor/initPolysData.hpp"
 #include "polygonProcessor/polyWorldCalculator/intersections/triangleIntersection.hpp"
-#include "spatial/geometry/geomConst.hpp"
 
 namespace {
 
@@ -22,8 +21,7 @@ static_assert(!HasProjection<geometry::point_t<1>>);
 static_assert(HasProjection<geometry::point_t<2>>);
 
 TEST(PointProjection, PreservesRemainingCoordinatesInOrder) {
-    const geometry::point_t<geometry::defaultDim> point(
-        std::array<double, geometry::defaultDim>{1, 2, 3});
+    const geometry::point_t<3> point(std::array<double, 3>{1, 2, 3});
     EXPECT_EQ(point.project(0), (geometry::point_t<2>(std::array<double, 2>{2, 3})));
     EXPECT_EQ(point.project(1), (geometry::point_t<2>(std::array<double, 2>{1, 3})));
     EXPECT_EQ(point.project(2), (geometry::point_t<2>(std::array<double, 2>{1, 2})));
@@ -40,12 +38,11 @@ TEST(PointProjection, SupportsOtherDimensionsAndRejectsInvalidAxis) {
 
     const geometry::point_t<4> point(std::array<double, 4>{1, 2, 3, 4});
     EXPECT_EQ(point.project(1),
-              (geometry::point_t<geometry::defaultDim>(
-                  std::array<double, geometry::defaultDim>{1, 3, 4})));
+              (geometry::point_t<3>(std::array<double, 3>{1, 3, 4})));
     EXPECT_THROW(point.project(4), std::out_of_range);
 }
 
-using TriangleVertices = std::array<geometry::point_t<geometry::defaultDim>, 3>;
+using TriangleVertices = std::array<geometry::point_t<3>, 3>;
 
 struct TrianglePairCase {
     const char* name;
@@ -64,18 +61,14 @@ TEST_P(TrianglePairIntersection,
        IsIndependentOfVertexOrderPairOrderAndProjectionAxis) {
     const auto& testCase = GetParam();
     // Cyclic coordinate permutations exercise projections onto XY, YZ and XZ.
-    for (std::size_t axisRotation = 0; axisRotation < geometry::defaultDim;
-         ++axisRotation) {
-        auto transform =
-            [axisRotation](const geometry::point_t<geometry::defaultDim>& point) {
-                const std::array<double, geometry::defaultDim> coordinates{
-                    point.x(), point.y(), point.z()};
-                return geometry::point_t<geometry::defaultDim>(
-                    std::array<double, geometry::defaultDim>{
-                        coordinates.at(axisRotation),
-                        coordinates.at((axisRotation + 1) % geometry::defaultDim),
-                        coordinates.at((axisRotation + 2) % geometry::defaultDim)});
-            };
+    for (std::size_t axisRotation = 0; axisRotation < 3; ++axisRotation) {
+        auto transform = [axisRotation](const geometry::point_t<3>& point) {
+            const std::array<double, 3> coordinates{point.x(), point.y(), point.z()};
+            return geometry::point_t<3>(
+                std::array<double, 3>{coordinates.at(axisRotation),
+                                      coordinates.at((axisRotation + 1) % 3),
+                                      coordinates.at((axisRotation + 2) % 3)});
+        };
         constexpr std::array<std::array<std::size_t, 3>, 6> VERTEX_ORDERS{
             {{0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0}}};
         for (const auto& firstOrder : VERTEX_ORDERS) {
@@ -97,14 +90,12 @@ TEST_P(TrianglePairIntersection,
                     }
                     const auto makeTriangle = [](const auto& vertices) {
                         const auto point = [](const auto& vertex) {
-                            return geometry::point_t<geometry::defaultDim>(
-                                std::array<double, geometry::defaultDim>{
-                                    vertex.x(), vertex.y(), vertex.z()});
+                            return geometry::point_t<3>(std::array<double, 3>{
+                                vertex.x(), vertex.y(), vertex.z()});
                         };
-                        return geometry::triangle_t<geometry::defaultDim>(
-                            point(vertices[0]),
-                            point(vertices[1]),
-                            point(vertices[2]));
+                        return geometry::triangle_t<3>(point(vertices[0]),
+                                                       point(vertices[1]),
+                                                       point(vertices[2]));
                     };
                     const auto first = makeTriangle(input.data[0]);
                     const auto second = makeTriangle(input.data[1]);
@@ -119,112 +110,108 @@ TEST_P(TrianglePairIntersection,
 constexpr double CONTAINED_VERTEX_OFFSET = 0.5;
 constexpr double SEPARATED_VERTEX_X = 4.0001;
 
-const TriangleVertices baseTriangle{
-    {geometry::point_t<geometry::defaultDim>({0, 0, 0}),
-     geometry::point_t<geometry::defaultDim>({4, 0, 0}),
-     geometry::point_t<geometry::defaultDim>({0, 4, 0})}};
+const TriangleVertices baseTriangle{{geometry::point_t<3>({0, 0, 0}),
+                                     geometry::point_t<3>({4, 0, 0}),
+                                     geometry::point_t<3>({0, 4, 0})}};
 
 INSTANTIATE_TEST_SUITE_P(
     GeometricCases, TrianglePairIntersection,
-    testing::Values(
-        TrianglePairCase{"Identical", baseTriangle, baseTriangle, true},
-        TrianglePairCase{
-            "CoplanarContainment",
-            baseTriangle,
-            {{geometry::point_t<geometry::defaultDim>(
-                  {CONTAINED_VERTEX_OFFSET, CONTAINED_VERTEX_OFFSET, 0}),
-              geometry::point_t<geometry::defaultDim>(
-                  {1, CONTAINED_VERTEX_OFFSET, 0}),
-              geometry::point_t<geometry::defaultDim>(
-                  {CONTAINED_VERTEX_OFFSET, 1, 0})}},
-            true},
-        TrianglePairCase{"CoplanarCrossingEdges",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({3, 3, 0}),
-                           geometry::point_t<geometry::defaultDim>({-1, 3, 0}),
-                           geometry::point_t<geometry::defaultDim>({3, -1, 0})}},
-                         true},
-        TrianglePairCase{"CoplanarVertexContact",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({4, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({5, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({4, 1, 0})}},
-                         true},
-        TrianglePairCase{"SharedEdge",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({0, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({4, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({0, -4, 0})}},
-                         true},
-        TrianglePairCase{"PartialEdgeContact",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({1, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({3, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({2, -2, 0})}},
-                         true},
-        TrianglePairCase{"CoplanarSeparatedWithOverlappingBounds",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({3, 3, 0}),
-                           geometry::point_t<geometry::defaultDim>({5, 3, 0}),
-                           geometry::point_t<geometry::defaultDim>({3, 5, 0})}},
-                         false},
-        TrianglePairCase{
-            "CoplanarSmallGap",
-            baseTriangle,
-            {{geometry::point_t<geometry::defaultDim>({SEPARATED_VERTEX_X, 0, 0}),
-              geometry::point_t<geometry::defaultDim>({5, 0, 0}),
-              geometry::point_t<geometry::defaultDim>({SEPARATED_VERTEX_X, 1, 0})}},
-            false},
-        TrianglePairCase{"ParallelPlanes",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({0, 0, 1}),
-                           geometry::point_t<geometry::defaultDim>({4, 0, 1}),
-                           geometry::point_t<geometry::defaultDim>({0, 4, 1})}},
-                         false},
-        TrianglePairCase{"SpatialCrossing",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({1, 1, -1}),
-                           geometry::point_t<geometry::defaultDim>({1, 1, 1}),
-                           geometry::point_t<geometry::defaultDim>({2, 1, 1})}},
-                         true},
-        TrianglePairCase{"SpatialVertexContact",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({1, 1, 0}),
-                           geometry::point_t<geometry::defaultDim>({1, 1, 2}),
-                           geometry::point_t<geometry::defaultDim>({2, 1, 2})}},
-                         true},
-        TrianglePairCase{"SpatialEdgeContact",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({1, 1, 0}),
-                           geometry::point_t<geometry::defaultDim>({2, 1, 0}),
-                           geometry::point_t<geometry::defaultDim>({1, 1, 2})}},
-                         true},
-        TrianglePairCase{"SpatialSharedVertex",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({0, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({-1, 0, 1}),
-                           geometry::point_t<geometry::defaultDim>({0, -1, 1})}},
-                         true},
-        TrianglePairCase{"CrossesPlaneOutsideTriangle",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({5, 5, -1}),
-                           geometry::point_t<geometry::defaultDim>({5, 5, 1}),
-                           geometry::point_t<geometry::defaultDim>({6, 5, 1})}},
-                         false},
-        TrianglePairCase{"DisjointIntervalsOnPlaneIntersection",
-                         baseTriangle,
-                         {{geometry::point_t<geometry::defaultDim>({1, 5, -1}),
-                           geometry::point_t<geometry::defaultDim>({1, 5, 1}),
-                           geometry::point_t<geometry::defaultDim>({1, 6, 0})}},
-                         false},
-        TrianglePairCase{"ObliqueCoplanarContainment",
-                         {{geometry::point_t<geometry::defaultDim>({0, 0, 0}),
-                           geometry::point_t<geometry::defaultDim>({4, 0, 4}),
-                           geometry::point_t<geometry::defaultDim>({0, 4, 4})}},
-                         {{geometry::point_t<geometry::defaultDim>({1, 1, 2}),
-                           geometry::point_t<geometry::defaultDim>({2, 1, 3}),
-                           geometry::point_t<geometry::defaultDim>({1, 2, 3})}},
-                         true}),
+    testing::Values(TrianglePairCase{"Identical", baseTriangle, baseTriangle, true},
+                    TrianglePairCase{
+                        "CoplanarContainment",
+                        baseTriangle,
+                        {{geometry::point_t<3>(
+                              {CONTAINED_VERTEX_OFFSET, CONTAINED_VERTEX_OFFSET, 0}),
+                          geometry::point_t<3>({1, CONTAINED_VERTEX_OFFSET, 0}),
+                          geometry::point_t<3>({CONTAINED_VERTEX_OFFSET, 1, 0})}},
+                        true},
+                    TrianglePairCase{"CoplanarCrossingEdges",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({3, 3, 0}),
+                                       geometry::point_t<3>({-1, 3, 0}),
+                                       geometry::point_t<3>({3, -1, 0})}},
+                                     true},
+                    TrianglePairCase{"CoplanarVertexContact",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({4, 0, 0}),
+                                       geometry::point_t<3>({5, 0, 0}),
+                                       geometry::point_t<3>({4, 1, 0})}},
+                                     true},
+                    TrianglePairCase{"SharedEdge",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({0, 0, 0}),
+                                       geometry::point_t<3>({4, 0, 0}),
+                                       geometry::point_t<3>({0, -4, 0})}},
+                                     true},
+                    TrianglePairCase{"PartialEdgeContact",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({1, 0, 0}),
+                                       geometry::point_t<3>({3, 0, 0}),
+                                       geometry::point_t<3>({2, -2, 0})}},
+                                     true},
+                    TrianglePairCase{"CoplanarSeparatedWithOverlappingBounds",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({3, 3, 0}),
+                                       geometry::point_t<3>({5, 3, 0}),
+                                       geometry::point_t<3>({3, 5, 0})}},
+                                     false},
+                    TrianglePairCase{
+                        "CoplanarSmallGap",
+                        baseTriangle,
+                        {{geometry::point_t<3>({SEPARATED_VERTEX_X, 0, 0}),
+                          geometry::point_t<3>({5, 0, 0}),
+                          geometry::point_t<3>({SEPARATED_VERTEX_X, 1, 0})}},
+                        false},
+                    TrianglePairCase{"ParallelPlanes",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({0, 0, 1}),
+                                       geometry::point_t<3>({4, 0, 1}),
+                                       geometry::point_t<3>({0, 4, 1})}},
+                                     false},
+                    TrianglePairCase{"SpatialCrossing",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({1, 1, -1}),
+                                       geometry::point_t<3>({1, 1, 1}),
+                                       geometry::point_t<3>({2, 1, 1})}},
+                                     true},
+                    TrianglePairCase{"SpatialVertexContact",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({1, 1, 0}),
+                                       geometry::point_t<3>({1, 1, 2}),
+                                       geometry::point_t<3>({2, 1, 2})}},
+                                     true},
+                    TrianglePairCase{"SpatialEdgeContact",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({1, 1, 0}),
+                                       geometry::point_t<3>({2, 1, 0}),
+                                       geometry::point_t<3>({1, 1, 2})}},
+                                     true},
+                    TrianglePairCase{"SpatialSharedVertex",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({0, 0, 0}),
+                                       geometry::point_t<3>({-1, 0, 1}),
+                                       geometry::point_t<3>({0, -1, 1})}},
+                                     true},
+                    TrianglePairCase{"CrossesPlaneOutsideTriangle",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({5, 5, -1}),
+                                       geometry::point_t<3>({5, 5, 1}),
+                                       geometry::point_t<3>({6, 5, 1})}},
+                                     false},
+                    TrianglePairCase{"DisjointIntervalsOnPlaneIntersection",
+                                     baseTriangle,
+                                     {{geometry::point_t<3>({1, 5, -1}),
+                                       geometry::point_t<3>({1, 5, 1}),
+                                       geometry::point_t<3>({1, 6, 0})}},
+                                     false},
+                    TrianglePairCase{"ObliqueCoplanarContainment",
+                                     {{geometry::point_t<3>({0, 0, 0}),
+                                       geometry::point_t<3>({4, 0, 4}),
+                                       geometry::point_t<3>({0, 4, 4})}},
+                                     {{geometry::point_t<3>({1, 1, 2}),
+                                       geometry::point_t<3>({2, 1, 3}),
+                                       geometry::point_t<3>({1, 2, 3})}},
+                                     true}),
     [](const testing::TestParamInfo<TrianglePairCase>& info) {
         return std::string(info.param.name);
     });

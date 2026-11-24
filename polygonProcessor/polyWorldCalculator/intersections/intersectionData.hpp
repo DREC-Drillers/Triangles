@@ -2,16 +2,13 @@
 
 #include <vector>
 
-#include "spatial/geometry/geomConst.hpp"
-
 import geometry;
 
 namespace triangles {
 
 struct IntersectionData {
-    std::vector<const geometry::polygon_t<geometry::defaultDim>*> intersectingPolys;
-    std::vector<const geometry::polygon_t<geometry::defaultDim>*>
-        nonIntersectingPolys;
+    std::vector<const geometry::polygon_t<3>*> intersectingPolys;
+    std::vector<const geometry::polygon_t<3>*> nonIntersectingPolys;
 };
 
 } // namespace triangles
