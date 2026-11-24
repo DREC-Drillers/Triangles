@@ -155,8 +155,8 @@ bool doSegmentAndTriangleIntersect(const segment_t& segment,
     return doPointAndTriangleIntersect(intersection, triangle);
 }
 
-using TriangleForm = std::variant<point_t<3>, segment_t,
-                                  std::reference_wrapper<const triangle_t<3>>>;
+using TriangleForm =
+    std::variant<point_t<3>, segment_t, std::reference_wrapper<const triangle_t<3>>>;
 
 TriangleForm toRealForm(const triangle_t<3>& triangle) {
     switch (determineRealTriangleForm(triangle)) {

@@ -1,4 +1,6 @@
 #include <chrono>
+#include <core/backendFactory.hpp>
+#include <core/visualizer.hpp>
 #include <cstddef>
 #include <exception>
 #include <filesystem>
@@ -10,8 +12,6 @@
 #include <utility>
 
 #include "cameraController/orbitCameraController.hpp"
-#include <core/backendFactory.hpp>
-#include <core/visualizer.hpp>
 #include "parser/parser.hpp"
 #include "polygonProcessor/polyProcessor.hpp"
 #include "polygonProcessor/renderDataPreparer.hpp"
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
         const triangles::PolyWorld world(input);
         const auto worldCreated = Clock::now();
-        
+
         const triangles::PolyProcessor processor(world);
         const auto result = processor.calculateIntersections();
         const auto calculated = Clock::now();

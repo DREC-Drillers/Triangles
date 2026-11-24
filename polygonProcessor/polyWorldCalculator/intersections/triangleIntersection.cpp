@@ -63,7 +63,7 @@ bool triangleHasEdgeSeparatingFromOther(const triangle_t<2>& curTriangle,
 }
 
 bool doTrianglesIntersectOnPlane(const triangle_t<3>& first,
-                                  const triangle_t<3>& second) {
+                                 const triangle_t<3>& second) {
     const auto normal = first.unitNormal();
 
     const std::array<double, 3> normalComponents{

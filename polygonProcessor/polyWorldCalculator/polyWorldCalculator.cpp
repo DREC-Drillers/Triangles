@@ -1,10 +1,15 @@
+// clang-format off
+// Include BVH before geometry is imported to avoid a Clang/libstdc++ module conflict.
+#include "spatial/bvh.hpp"
+// clang-format on
+
+#include "polyWorldCalculator.hpp"
+
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-#include "spatial/bvh.hpp"
-#include "polyWorldCalculator.hpp"
 #include "intersections/intersection.hpp"
 
 namespace triangles {
@@ -22,8 +27,7 @@ const geometry::triangle_t<3>& asTriangle(const geometry::polygon_t<3>& polygon)
     return static_cast<const geometry::triangle_t<3>&>(polygon);
 }
 
-Bvh
-prepareBvh(const PolyWorld& world) {
+Bvh prepareBvh(const PolyWorld& world) {
     std::vector<axisAlignedBoundingBox_t> bounds;
     bounds.reserve(world.polys().size());
     for (const auto& polygon : world.polys()) {
@@ -33,7 +37,6 @@ prepareBvh(const PolyWorld& world) {
 }
 
 } // namespace
-
 
 IntersectionData
 PolyWorldCalculator::calculateIntersections(const PolyWorld& world) {
