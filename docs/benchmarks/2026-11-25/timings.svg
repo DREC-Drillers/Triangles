@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="850" viewBox="0 0 1200 850">
+<rect width="100%" height="100%" fill="white"/>
+<g font-family="sans-serif" font-size="13" fill="#111827">
+<text x="100" y="28" font-size="19">Время обработки в зависимости от числа треугольников</text>
+<text x="100" y="51">Медианы замеров; обе оси линейные, начало отсчёта — ноль</text>
+<text x="120" y="90" font-size="16">Поиск пересечений</text>
+<path d="M 120 360.0 h 750" stroke="#e5e7eb"/>
+<text x="110" y="364.0" text-anchor="end">0</text>
+<path d="M 120 276.6666666666667 h 750" stroke="#e5e7eb"/>
+<text x="110" y="280.6666666666667" text-anchor="end">1 000</text>
+<path d="M 120 193.33333333333334 h 750" stroke="#e5e7eb"/>
+<text x="110" y="197.33333333333334" text-anchor="end">2 000</text>
+<path d="M 120 110.0 h 750" stroke="#e5e7eb"/>
+<text x="110" y="114.0" text-anchor="end">3 000</text>
+<path d="M 120.0 110 v 250" stroke="#e5e7eb"/>
+<text x="120.0" y="382" text-anchor="middle">0</text>
+<path d="M 270.0 110 v 250" stroke="#e5e7eb"/>
+<text x="270.0" y="382" text-anchor="middle">200 000</text>
+<path d="M 420.0 110 v 250" stroke="#e5e7eb"/>
+<text x="420.0" y="382" text-anchor="middle">400 000</text>
+<path d="M 570.0 110 v 250" stroke="#e5e7eb"/>
+<text x="570.0" y="382" text-anchor="middle">600 000</text>
+<path d="M 720.0 110 v 250" stroke="#e5e7eb"/>
+<text x="720.0" y="382" text-anchor="middle">800 000</text>
+<path d="M 870.0 110 v 250" stroke="#e5e7eb"/>
+<text x="870.0" y="382" text-anchor="middle">1 000 000</text>
+<path d="M 120 110 v 250 h 750" fill="none" stroke="#111827"/>
+<text x="495.0" y="408" text-anchor="middle">Общее количество треугольников N, шт.</text>
+<text transform="translate(28 235.0) rotate(-90)" text-anchor="middle">Время t, мс</text>
+<text x="900" y="110">Доля пересекающихся</text>
+<text x="900" y="129">треугольников:</text>
+<polyline points="120.75,359.89421749999997 127.5,358.5201166666667 195.0,344.05916666666667 870.0,137.94833333333335" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="120.75" cy="359.89421749999997" r="3" fill="#2563eb"/>
+<circle cx="127.5" cy="358.5201166666667" r="3" fill="#2563eb"/>
+<circle cx="195.0" cy="344.05916666666667" r="3" fill="#2563eb"/>
+<circle cx="870.0" cy="137.94833333333335" r="3" fill="#2563eb"/>
+<text x="920" y="155" fill="#2563eb">50%</text>
+<text x="120" y="460" font-size="16">Вся подготовка до открытия окна</text>
+<path d="M 120 730.0 h 750" stroke="#e5e7eb"/>
+<text x="110" y="734.0" text-anchor="end">0</text>
+<path d="M 120 667.5 h 750" stroke="#e5e7eb"/>
+<text x="110" y="671.5" text-anchor="end">2 000</text>
+<path d="M 120 605.0 h 750" stroke="#e5e7eb"/>
+<text x="110" y="609.0" text-anchor="end">4 000</text>
+<path d="M 120 542.5 h 750" stroke="#e5e7eb"/>
+<text x="110" y="546.5" text-anchor="end">6 000</text>
+<path d="M 120 480.0 h 750" stroke="#e5e7eb"/>
+<text x="110" y="484.0" text-anchor="end">8 000</text>
+<path d="M 120.0 480 v 250" stroke="#e5e7eb"/>
+<text x="120.0" y="752" text-anchor="middle">0</text>
+<path d="M 270.0 480 v 250" stroke="#e5e7eb"/>
+<text x="270.0" y="752" text-anchor="middle">200 000</text>
+<path d="M 420.0 480 v 250" stroke="#e5e7eb"/>
+<text x="420.0" y="752" text-anchor="middle">400 000</text>
+<path d="M 570.0 480 v 250" stroke="#e5e7eb"/>
+<text x="570.0" y="752" text-anchor="middle">600 000</text>
+<path d="M 720.0 480 v 250" stroke="#e5e7eb"/>
+<text x="720.0" y="752" text-anchor="middle">800 000</text>
+<path d="M 870.0 480 v 250" stroke="#e5e7eb"/>
+<text x="870.0" y="752" text-anchor="middle">1 000 000</text>
+<path d="M 120 480 v 250 h 750" fill="none" stroke="#111827"/>
+<text x="495.0" y="778" text-anchor="middle">Общее количество треугольников N, шт.</text>
+<text transform="translate(28 605.0) rotate(-90)" text-anchor="middle">Время t, мс</text>
+<text x="900" y="480">Доля пересекающихся</text>
+<text x="900" y="499">треугольников:</text>
+<polyline points="120.75,729.8534540625001 127.5,728.152946875 195.0,713.3695937499999 870.0,532.3609375" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="120.75" cy="729.8534540625001" r="3" fill="#2563eb"/>
+<circle cx="127.5" cy="728.152946875" r="3" fill="#2563eb"/>
+<circle cx="195.0" cy="713.3695937499999" r="3" fill="#2563eb"/>
+<circle cx="870.0" cy="532.3609375" r="3" fill="#2563eb"/>
+<text x="920" y="525" fill="#2563eb">50%</text>
+</g></svg>
