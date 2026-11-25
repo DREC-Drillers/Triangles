@@ -21,29 +21,27 @@ public:
         std::vector<visualizer::SceneObject> objects;
 
         using Polygon = geometry::polygon_t<geometry::defaultDim>;
-        const auto append =
-            [&](std::span<const Polygon* const> polygons,
-                const std::array<float, 4>& color) {
-                Batches batches{
-                    makeBatch(visualizer::Topology::POINTS, color),
-                    makeBatch(visualizer::Topology::LINES, color),
-                    makeBatch(visualizer::Topology::TRIANGLES, color),
-                };
-
-                for (const auto* polygon : polygons) {
-                    if (polygon == nullptr) {
-                        throw std::invalid_argument(
-                            "RenderDataPreparer: null polygon");
-                    }
-                    appendPrimitive(batches, *polygon);
-                }
-                for (auto& batch : batches) {
-                    if (!batch.geometry.vertices.empty()) {
-                        batch.geometry.freezeVertices();
-                        objects.push_back(std::move(batch));
-                    }
-                }
+        const auto append = [&](std::span<const Polygon* const> polygons,
+                                const std::array<float, 4>& color) {
+            Batches batches{
+                makeBatch(visualizer::Topology::POINTS, color),
+                makeBatch(visualizer::Topology::LINES, color),
+                makeBatch(visualizer::Topology::TRIANGLES, color),
             };
+
+            for (const auto* polygon : polygons) {
+                if (polygon == nullptr) {
+                    throw std::invalid_argument("RenderDataPreparer: null polygon");
+                }
+                appendPrimitive(batches, *polygon);
+            }
+            for (auto& batch : batches) {
+                if (!batch.geometry.vertices.empty()) {
+                    batch.geometry.freezeVertices();
+                    objects.push_back(std::move(batch));
+                }
+            }
+        };
 
         append(intersections.nonIntersectingPolys, style.polyColor);
         append(intersections.intersectingPolys, style.intersectingPolyColor);
