@@ -80,6 +80,26 @@ def intersecting_count(count, fraction):
     return min(2 * round(count * fraction / 2), 2 * (count // 2))
 
 
+def randomized_triangles(rng, count, minimum, maximum):
+    cells = (count + 3) // 4
+    side = max(1, math.ceil(cells ** (1 / 3)))
+    while side ** 3 < cells:
+        side += 1
+    step = (maximum - minimum) / side
+    if not math.isfinite(step) or step < 1024 * math.ulp(max(abs(minimum), abs(maximum))):
+        raise ValueError("Coordinate range is too small for the requested count")
+
+    for cell in range(cells):
+        origin = (minimum + (cell % side) * step,
+                  minimum + ((cell // side) % side) * step,
+                  minimum + (cell // (side * side)) * step)
+        for _ in range(min(4, count - 4 * cell)):
+            center = tuple(value + step * rng.uniform(0.33, 0.67) for value in origin)
+            axis, tangent, _ = random_frame(rng)
+            yield triangle_around(rng, center, axis, tangent,
+                                  step * rng.uniform(0.07, 0.31))
+
+
 def mixed_triangles(rng, count, minimum, maximum, intersecting_fraction):
     cells = (count + 1) // 2
     side = math.ceil(cells ** (1 / 3))
@@ -120,8 +140,10 @@ def main():
     parser.add_argument("count", type=int, help="number of triangles")
     parser.add_argument("output", type=Path, help="output file")
     parser.add_argument("--seed", type=int, help="seed for reproducible inputs")
-    parser.add_argument("--mode", choices=("mixed", "random"), default="mixed",
-                        help="mixed: crossing 3D groups with a controlled intersection ratio (default)")
+    parser.add_argument("--mode", choices=("randomized", "mixed", "random"),
+                        default="mixed",
+                        help="randomized: local random triangles; mixed: controlled ratio (default); "
+                             "random: independent vertices across the whole box")
     parser.add_argument("--intersecting-fraction", type=float, default=0.5,
                         help="fraction of triangles participating in intersections in mixed mode (default: 0.5)")
     parser.add_argument("--min", dest="minimum", type=float, default=-10,
@@ -142,6 +164,8 @@ def main():
     if args.mode == "mixed":
         triangles = mixed_triangles(rng, args.count, args.minimum, args.maximum,
                                     args.intersecting_fraction)
+    elif args.mode == "randomized":
+        triangles = randomized_triangles(rng, args.count, args.minimum, args.maximum)
     else:
         triangles = (triangle(rng, args.minimum, args.maximum)
                      for _ in range(args.count))

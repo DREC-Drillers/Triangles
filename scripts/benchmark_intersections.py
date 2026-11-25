@@ -8,14 +8,26 @@ import math
 import random
 import statistics
 import subprocess
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from inputs.generate_input import randomized_triangles
 
 STAGES = ("Parsing_ms", "World_ms", "Intersections_ms", "Scene_ms", "Total_ms")
 COLORS = ("#2563eb", "#dc2626", "#059669", "#9333ea", "#d97706")
 
 
 def generate_input(path, count, intersecting, seed):
+    if intersecting is None:
+        triangles = randomized_triangles(random.Random(seed), count, -10000, 10000)
+        with path.open("w", encoding="utf-8") as output:
+            for points in triangles:
+                output.write("3\n")
+                for point in points:
+                    output.write(" ".join(f"{value:.9f}" for value in point) + "\n")
+                output.write("\n")
+        return
     # Each slot contains two coplanar triangles. Active pairs overlap; all
     # other triangles occupy disjoint bounding boxes, including across slots.
     order = list(range(count // 2))
@@ -36,12 +48,14 @@ def measure(binary, path, count, intersecting):
     )
     values = dict(line.split(": ", 1) for line in result.stderr.splitlines()
                   if ": " in line)
-    expected = {"Triangles": count, "Intersecting": intersecting,
-                "Non-intersecting": count - intersecting}
+    observed = int(values["Intersecting"])
+    expected = {"Triangles": count, "Non-intersecting": count - observed}
+    if intersecting is not None:
+        expected["Intersecting"] = intersecting
     for key, value in expected.items():
         if int(values[key]) != value:
             raise RuntimeError(f"{key}: expected {value}, got {values[key]}")
-    return {stage: float(values[stage]) for stage in STAGES}
+    return observed, {stage: float(values[stage]) for stage in STAGES}
 
 
 def axis_scale(maximum, integer=False):
@@ -65,7 +79,8 @@ def tick_label(value):
 def write_plot(path, rows):
     # Standalone SVG keeps the benchmark usable without plotting dependencies.
     width, height = 1200, 850
-    fractions = sorted({row["fraction"] for row in rows})
+    fractions = sorted({row["fraction"] for row in rows},
+                       key=lambda fraction: -1 if fraction is None else fraction)
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" '
              f'height="{height}" viewBox="0 0 {width} {height}">',
              '<rect width="100%" height="100%" fill="white"/>',
@@ -109,7 +124,7 @@ def write_plot(path, rows):
             parts.append(f'<polyline points="{coordinates}" fill="none" stroke="{color}" stroke-width="2"/>')
             for x, y in points:
                 parts.append(f'<circle cx="{x}" cy="{y}" r="3" fill="{color}"/>')
-            label = html.escape(f"{fraction * 100:g}%")
+            label = "Случайные" if fraction is None else html.escape(f"{fraction * 100:g}%")
             parts.append(f'<text x="920" y="{top + 45 + index * 23}" fill="{color}">{label}</text>')
     parts.append('</g></svg>')
     path.write_text("\n".join(parts), encoding="utf-8")
@@ -127,6 +142,8 @@ def main():
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--warmups", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--randomized", action="store_true",
+                        help="use varied 3D triangles with a measured intersection count")
     parser.add_argument("--output", type=Path, default=Path("build/benchmark-intersections"))
     parser.add_argument("--plot-from", type=Path,
                         help="redraw a medians.csv file without running the benchmark")
@@ -142,10 +159,11 @@ def main():
             rows = []
             for row in csv.DictReader(source):
                 count, intersecting = int(row["count"]), int(row["intersecting"])
-                fraction = (float(row["fraction"]) if "fraction" in row else
+                fraction = ((float(row["fraction"]) if row["fraction"] else None)
+                            if "fraction" in row else
                             min(args.fractions, key=lambda value:
                                 abs(value - intersecting / count)))
-                if 2 * round(count * fraction / 2) != intersecting:
+                if fraction is not None and 2 * round(count * fraction / 2) != intersecting:
                     parser.error("old CSV fractions differ; specify the original --fractions")
                 rows.append({"count": count, "intersecting": intersecting,
                              "fraction": fraction,
@@ -165,15 +183,16 @@ def main():
         writer.writeheader()
         output.flush()
         for count in sorted(set(args.counts)):
-            for fraction in sorted(set(args.fractions)):
-                intersecting = 2 * round(count * fraction / 2)
-                print(f"N={count}, intersecting={intersecting}, "
-                      f"pair checks/run={count * (count - 1) // 2:,}", flush=True)
+            fractions = [None] if args.randomized else sorted(set(args.fractions))
+            for fraction in fractions:
+                intersecting = None if fraction is None else 2 * round(count * fraction / 2)
+                print(f"N={count}, seed={args.seed}", flush=True)
                 path = args.output / "input.txt"
                 generate_input(path, count, intersecting, args.seed)
                 samples = []
                 for iteration in range(args.warmups + args.repeats):
-                    timings = measure(binary, path, count, intersecting)
+                    observed, timings = measure(binary, path, count, intersecting)
+                    intersecting = observed
                     if iteration < args.warmups:
                         continue
                     samples.append(timings)
@@ -181,7 +200,8 @@ def main():
                                      "fraction": fraction,
                                      "repeat": iteration - args.warmups + 1, **timings})
                     output.flush()
-                    print(f"  intersections={timings['Intersections_ms']:.3f} ms, "
+                    print(f"  intersecting={intersecting}, "
+                          f"intersections={timings['Intersections_ms']:.3f} ms, "
                           f"total={timings['Total_ms']:.3f} ms", flush=True)
                 medians.append({"count": count, "intersecting": intersecting,
                                 "fraction": fraction,
