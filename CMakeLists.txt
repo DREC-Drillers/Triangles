@@ -87,6 +87,7 @@ if(TRIANGLES_BUILD_APP)
     )
 
     triangles_configure_target(triangles)
+    target_compile_features(triangles PRIVATE cxx_std_20)
 endif()
 
 if(BUILD_TESTING)

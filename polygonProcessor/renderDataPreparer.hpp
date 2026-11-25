@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstddef>
+#include <span>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -19,9 +20,9 @@ public:
     prepare(const IntersectionData& intersections, const RenderStyle& style = {}) {
         std::vector<visualizer::SceneObject> objects;
 
+        using Polygon = geometry::polygon_t<geometry::defaultDim>;
         const auto append =
-            [&](const std::vector<const geometry::polygon_t<geometry::defaultDim>*>&
-                    polygons,
+            [&](std::span<const Polygon* const> polygons,
                 const std::array<float, 4>& color) {
                 Batches batches{
                     makeBatch(visualizer::Topology::POINTS, color),
