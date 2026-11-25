@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <filesystem>
+#include <fstream>
 #include <cstddef>
 #include <stdexcept>
 #include <utility>
@@ -8,13 +10,57 @@
 
 #include "polygonProcessor/polyWorldCalculator/intersections/intersectionData.hpp"
 #include "scene/sceneObject.hpp"
-#include "settings.hpp"
+#include "colorSettings.hpp"
+#include "polygonProcessor/polyWorld.hpp"
 #include "spatial/geometry/geomConst.hpp"
 
 namespace triangles {
 
 class RenderDataPreparer {
 public:
+    static std::vector<visualizer::SceneObject>
+    preparePalette(const PolyWorld& world, const std::filesystem::path& path) {
+        std::ifstream colors(path, std::ios::binary);
+        constexpr std::size_t paletteSize = 256;
+        std::array<unsigned char, paletteSize * 3> palette{};
+        if (!colors.read(reinterpret_cast<char*>(palette.data()), palette.size())) {
+            throw std::runtime_error("Cannot read color palette: " + path.string());
+        }
+        std::vector<unsigned char> indices(world.polys().size());
+        if (!colors.read(reinterpret_cast<char*>(indices.data()), indices.size()) ||
+            colors.peek() != std::char_traits<char>::eof()) {
+            throw std::runtime_error("Color count must match triangle count: " + path.string());
+        }
+
+        std::array<visualizer::SceneObject, paletteSize> batches;
+        for (std::size_t i = 0; i < paletteSize; ++i) {
+            batches[i] = makeBatch(visualizer::Topology::TRIANGLES,
+                                   {palette[3 * i] / 255.0f, palette[3 * i + 1] / 255.0f,
+                                    palette[3 * i + 2] / 255.0f, 1.0f});
+            batches[i].material.lit = colorSettings::kLightPaletteColors;
+        }
+        for (std::size_t i = 0; i < indices.size(); ++i) {
+            auto& batch = batches[indices[i]];
+            const auto& polygon = *world.polys()[i];
+            if (polygon.points().size() != 3) {
+                throw std::runtime_error("A color palette requires triangles");
+            }
+            const auto normal = batch.material.lit ? normalOf(polygon) : std::array<float, 3>{};
+            for (const auto& point : polygon.points()) {
+                batch.geometry.vertices.push_back(toRenderVertex(point, normal));
+            }
+        }
+
+        std::vector<visualizer::SceneObject> objects;
+        for (auto& batch : batches) {
+            if (!batch.geometry.vertices.empty()) {
+                batch.geometry.freezeVertices();
+                objects.push_back(std::move(batch));
+            }
+        }
+        return objects;
+    }
+
     static std::vector<visualizer::SceneObject>
     prepare(const IntersectionData& intersections, const RenderStyle& style = {}) {
         std::vector<visualizer::SceneObject> objects;
@@ -96,16 +142,19 @@ private:
             return;
         }
 
-        const auto n = polygon.unitNormal();
-        const std::array<float, geometry::defaultDim> normal{
-            static_cast<float>(n.x()),
-            static_cast<float>(n.y()),
-            static_cast<float>(n.z())};
-
+        const auto normal = normalOf(polygon);
         for (const auto& point : points) {
             triangleBatch.geometry.vertices.push_back(toRenderVertex(point, normal));
         }
     }
+
+    static std::array<float, 3>
+    normalOf(const geometry::polygon_t<geometry::defaultDim>& polygon) {
+        const auto normal = polygon.unitNormal();
+        return {static_cast<float>(normal.x()), static_cast<float>(normal.y()),
+                static_cast<float>(normal.z())};
+    }
+
 };
 
 } // namespace triangles

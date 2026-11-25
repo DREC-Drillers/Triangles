@@ -30,8 +30,10 @@ int main(int argc, char* argv[]) {
         using Clock = std::chrono::steady_clock;
         const auto start = Clock::now();
 
-        const auto input =
-            triangles::Parser{}.parse(std::filesystem::path{arguments[1]});
+        const std::filesystem::path inputPath{arguments[1]};
+        auto colorPath = inputPath;
+        colorPath += ".colors";
+        const auto input = triangles::Parser{}.parse(inputPath);
         const auto parsed = Clock::now();
 
         const triangles::PolyWorld world(input);
@@ -52,7 +54,10 @@ int main(int argc, char* argv[]) {
         std::cout.flush();
 
         visualizer::Scene scene;
-        for (auto& object : triangles::RenderDataPreparer::prepare(result)) {
+        auto objects = std::filesystem::exists(colorPath)
+                           ? triangles::RenderDataPreparer::preparePalette(world, colorPath)
+                           : triangles::RenderDataPreparer::prepare(result);
+        for (auto& object : objects) {
             scene.addObject(std::move(object));
         }
         const auto scenePrepared = Clock::now();
