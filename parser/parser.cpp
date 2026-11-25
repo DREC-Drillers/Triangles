@@ -31,8 +31,8 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
         };
         const lexer::Token& countToken = tokens.peekToken();
         if (countToken.type != lexer::TokenType::INT) {
-            tokens.failAtToken(countToken,
-                               "Expected an integer vertex count" + polygonContext());
+            tokens.failAtToken(
+                countToken, "Expected an integer vertex count" + polygonContext());
         }
         const auto count = tokens.expectInt({});
         if (count < 3 || count >= settings::kVertexCountUpperBound) {
@@ -50,9 +50,11 @@ InitPolysData Parser::parse(lexer::TokenStream& tokens) const {
                 const auto& token = tokens.peekToken();
                 if (token.type != lexer::TokenType::INT &&
                     token.type != lexer::TokenType::DOUBLE) {
-                    tokens.failAtToken(token, std::string("Expected ") + axis +
-                        " coordinate (polygon " + std::to_string(polygonNumber) +
-                        ", vertex " + std::to_string(vertex + 1) + ")");
+                    tokens.failAtToken(
+                        token,
+                        std::string("Expected ") + axis + " coordinate (polygon " +
+                            std::to_string(polygonNumber) + ", vertex " +
+                            std::to_string(vertex + 1) + ")");
                 }
                 return tokens.expectDouble({});
             };
